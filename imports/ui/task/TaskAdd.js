@@ -29,7 +29,9 @@ export class TaskAdd extends React.Component {
 			quantity_unit: '',
 			rate: '',
 			inverted: false,
-			calendarFocused: null
+			calendarFocused: null,
+			predecessors: [],
+			dependencies: []
 		}
 		this.handleTitleChange = this.handleTitleChange.bind(this);
 		this.handleTypeChange = this.handleTypeChange.bind(this);
@@ -42,6 +44,8 @@ export class TaskAdd extends React.Component {
 		this.handleInvertedChange = this.handleInvertedChange.bind(this);
 		this.onFocusChange = this.onFocusChange.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
+		this.renderPossiblePreds = this.renderPossiblePreds.bind(this);
+		this.addPredecessor = this.addPredecessor.bind(this);
 	}
 
 	handleTitleChange(e) {
@@ -92,7 +96,7 @@ export class TaskAdd extends React.Component {
 			date_start: startDate,
 			date_end: endDate,
 			duration
-		})
+			})
 		)
 	}
 
@@ -140,6 +144,23 @@ export class TaskAdd extends React.Component {
 		// })
 	}
 
+	addPredecessor(task) {
+		// ADD PREDS TO STATE AND UPDATE DEPENDENCIES
+		let predecessors = this.state.predecessors;
+		predecessors.push(task);
+		this.setState(() => ({ predecessors }));
+		console.log(this.state.predecessors);
+	}
+
+	renderPossiblePreds() {
+		// RENDER ONLY POSSIBLE PREDS ACCORDING TO DEPENDENCIES
+		return this.props.tasks.map((task) => {
+			return <div onClick={() => this.addPredecessor(task)} key={task._id}>{task.title}</div> 
+		})
+	}
+
+	// FUNCTION TO REMOVE PREDS AND REUPDATE DEPENDENCIES
+
 	render() {
 		return(
 			<div className="task__add">
@@ -158,9 +179,13 @@ export class TaskAdd extends React.Component {
 				  isOutsideRange={() => false}
 				/>
 				<div className="task__add-item">Duration: <input disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
-				<div className="task__add-item">Quantity: <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Duration" type="text"/></div>
+				<div className="task__add-item">Quantity: <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
 				<div className="task__add-item">Quantity Unit: <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
 				<div className="task__add-item">Rate: <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
+				<div className="task__add-item">Inverted: <input type="checkbox" onChange={this.handleInvertedChange} /></div>
+
+				<div className="task__add-item"><h3>Predecessors</h3> { this.renderPossiblePreds() }</div>
+
 
 				<button className='admin__button' onClick={this.onSubmit}>Add a Task</button>
 			</div>

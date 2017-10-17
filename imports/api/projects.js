@@ -87,7 +87,7 @@ Meteor.methods({
 	},
 	// UPDATES A ENVOYER DE LA FORME : {title, pk_start...}
 
-	'projects.update'(_id, update) {
+	'projects.update'(_id, updates) {
 		const project = Projects.findOne({_id}) 
 		if (project.userId !== this.userId) {
 			throw new Meteor.Error('not-authorized')
@@ -137,7 +137,7 @@ Meteor.methods({
 				type: Number,
 				optional: true
 			}
-		}).validate({_id, title, type, country, pk_start, pk_end, length, date_start, date_end, duration });
+		}).validate({_id, ...updates });
 
 		Projects.update({
 			_id,

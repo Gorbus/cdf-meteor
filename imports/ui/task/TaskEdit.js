@@ -9,10 +9,6 @@ import 'react-dates/lib/css/_datepicker.css';
 
 import { DateRangePicker } from 'react-dates';
 
-
-
-
-
 export class TaskAdd extends React.Component {
 	constructor(props){
 		super(props);
@@ -111,8 +107,8 @@ export class TaskAdd extends React.Component {
 			pk_start: parseInt(this.state.pk_start),
 			pk_end: parseInt(this.state.pk_end),
 			length: parseInt(this.state.length),
-			date_start: this.state.date_start.valueOf(),
-			date_end: this.state.date_end.valueOf(),
+			date_start: this.state.date_start.unix(),
+			date_end: this.state.date_end.unix(),
 			duration : parseInt(this.state.duration),
 			quantity: parseInt(this.state.quantity),
 			quantity_unit: this.state.quantity_unit,
