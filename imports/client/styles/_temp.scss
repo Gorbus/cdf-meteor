@@ -21,6 +21,10 @@
 
 .task__add-item {
 	margin-top: .5rem;
+	display: flex;
+	input {
+		flex: 1;
+	}
 }
 
 .task {
@@ -64,4 +68,14 @@
 
 .task__details {
 	position: absolute;
+}
+
+.task__add-possiblePreds {
+	display: flex;
+	flex-direction: column;
+}
+
+.task__add-preds {
+	display: flex;
+	flex-direction: column;
 }

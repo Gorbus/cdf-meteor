@@ -9,10 +9,6 @@ import 'react-dates/lib/css/_datepicker.css';
 
 import { DateRangePicker } from 'react-dates';
 
-
-
-
-
 export class TaskAdd extends React.Component {
 	constructor(props){
 		super(props);
@@ -30,6 +26,7 @@ export class TaskAdd extends React.Component {
 			rate: '',
 			inverted: false,
 			calendarFocused: null,
+			possiblePredecessors: this.props.tasks ? this.props.tasks : [],
 			predecessors: [],
 			dependencies: []
 		}
@@ -46,6 +43,14 @@ export class TaskAdd extends React.Component {
 		this.onSubmit = this.onSubmit.bind(this);
 		this.renderPossiblePreds = this.renderPossiblePreds.bind(this);
 		this.addPredecessor = this.addPredecessor.bind(this);
+		this.getPossiblePredecessors = this.getPossiblePredecessors.bind(this);
+		this.updateDependenciesWhenAddingTask = this.updateDependenciesWhenAddingTask.bind(this);
+		this.updateDependenciesWhenRemovingTask = this.updateDependenciesWhenRemovingTask.bind(this);
+		this.renderPreds = this.renderPreds.bind(this);
+	}
+
+	componentWillReceiveProps(){
+		this.getPossiblePredecessors();
 	}
 
 	handleTitleChange(e) {
@@ -128,8 +133,8 @@ export class TaskAdd extends React.Component {
 			this.state.inverted,
 			null,
 			null,
-			null,
-			null
+			this.state.predecessors,
+			this.state.dependencies
 			);
 		// this.setState({
 		// 	title: '',
@@ -144,32 +149,97 @@ export class TaskAdd extends React.Component {
 		// })
 	}
 
+
+	updateDependenciesWhenAddingTask(task){
+		let dependencies = this.state.dependencies;
+		if(!dependencies.one((onetask) => onetask === task)){
+			dependencies.push(task);
+			if (task.dependencies){
+				for (let i = 0 ; i < task.dependencies.length ; i++){
+					if(!dependencies.one((onetask) => onetask == task.dependencies[i]))
+						dependencies.push(task.dependencies[i])
+				}
+			}
+		}
+		this.setState(() => ({ dependencies }), () => {
+			this.getPossiblePredecessors();	
+		})
+	}
+
+	getPossiblePredecessors(){
+		let possiblePredecessors = this.props.tasks.filter((task) => {
+			if (this.state.predecessors.one((onetask) => onetask === task)){
+				return false;
+			}
+			return true; 
+		})
+		this.setState(() => ({ possiblePredecessors }))
+	}
+
 	addPredecessor(task) {
-		// ADD PREDS TO STATE AND UPDATE DEPENDENCIES
 		let predecessors = this.state.predecessors;
 		predecessors.push(task);
 		this.setState(() => ({ predecessors }));
-		console.log(this.state.predecessors);
+		this.updateDependenciesWhenAddingTask(task);
+	}
+
+	updateDependenciesWhenRemovingTask(){
+		let dependencies = [];
+		for (let i = 0; i < this.state.predecessors.length; i++){
+			let pred = this.state.predecessors[i];
+			console.log(pred);
+			dependencies.push(pred);
+			if (pred.dependencies){
+				for (let j = 0; j < pred.dependencies.length; j++){
+					let dep = pred.dependencies[j];
+					if(!dependencies.one((onetask) => onetask === dep)) {
+						dependencies.push(dep)
+					}
+				}
+			}
+		}
+		this.setState(() => ({ dependencies }), () => {
+			this.getPossiblePredecessors();
+		})
+	}
+
+	removePredecessor(task){
+		let predecessors = this.state.predecessors.filter((predTask) => {
+			if (predTask === task) {
+				return false;
+			} else {
+				return true;
+			}
+		})
+		this.setState(() => ({ predecessors }), () => {
+			this.updateDependenciesWhenRemovingTask();
+		});
 	}
 
 	renderPossiblePreds() {
-		// RENDER ONLY POSSIBLE PREDS ACCORDING TO DEPENDENCIES
-		return this.props.tasks.map((task) => {
+		return this.state.possiblePredecessors.map((task) => {
 			return <div onClick={() => this.addPredecessor(task)} key={task._id}>{task.title}</div> 
+		})
+	}
+
+	renderPreds() {
+		return this.state.predecessors.map((task) => {
+			return <div onClick={() => this.removePredecessor(task)} key={task._id}>{task.title}</div> 
 		})
 	}
 
 	// FUNCTION TO REMOVE PREDS AND REUPDATE DEPENDENCIES
 
 	render() {
+		console.log(this.state);
 		return(
 			<div className="task__add">
 				<h1>ADD A TASK TO PROJECT</h1>
-				<div className="task__add-item">Title: <input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
-				<div className="task__add-item">Type: <input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
-				<div className="task__add-item">Starting pK: <input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
-				<div className="task__add-item">Ending pK: <input onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
-				<div className="task__add-item">Length: <input disabled value={this.state.length} placeholder="Length" type="text"/></div>
+				<div className="task__add-item"><h2>Title:</h2> <input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
+				<div className="task__add-item"><h2>Type:</h2> <input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
+				<div className="task__add-item"><h2>Starting pK:</h2> <input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
+				<div className="task__add-item"><h2>Ending pK:</h2> <input onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
+				<div className="task__add-item"><h2>Length:</h2> <input disabled value={this.state.length} placeholder="Length" type="text"/></div>
 				<DateRangePicker
 				  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
 				  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
@@ -178,14 +248,15 @@ export class TaskAdd extends React.Component {
 				  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
 				  isOutsideRange={() => false}
 				/>
-				<div className="task__add-item">Duration: <input disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
-				<div className="task__add-item">Quantity: <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
-				<div className="task__add-item">Quantity Unit: <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
-				<div className="task__add-item">Rate: <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
-				<div className="task__add-item">Inverted: <input type="checkbox" onChange={this.handleInvertedChange} /></div>
+				<div className="task__add-item"><h2>Duration:</h2> <input disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
+				<div className="task__add-item"><h2>Quantity:</h2> <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
+				<div className="task__add-item"><h2>Quantity Unit:</h2> <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
+				<div className="task__add-item"><h2>Rate:</h2> <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
+				<div className="task__add-item"><h2>Inverted:</h2> <input type="checkbox" onChange={this.handleInvertedChange} /></div>
 
-				<div className="task__add-item"><h3>Predecessors</h3> { this.renderPossiblePreds() }</div>
+				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div></div>
 
+				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.renderPreds() }</div></div>
 
 				<button className='admin__button' onClick={this.onSubmit}>Add a Task</button>
 			</div>
