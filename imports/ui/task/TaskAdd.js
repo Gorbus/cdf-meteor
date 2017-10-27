@@ -44,8 +44,8 @@ export class TaskAdd extends React.Component {
 		this.renderPossiblePreds = this.renderPossiblePreds.bind(this);
 		this.addPredecessor = this.addPredecessor.bind(this);
 		this.getPossiblePredecessors = this.getPossiblePredecessors.bind(this);
-		this.updateDependenciesWhenAddingTask = this.updateDependenciesWhenAddingTask.bind(this);
-		this.updateDependenciesWhenRemovingTask = this.updateDependenciesWhenRemovingTask.bind(this);
+		this.updateDependenciesWhenAddingPred = this.updateDependenciesWhenAddingPred.bind(this);
+		this.updateDependenciesWhenRemovingPred = this.updateDependenciesWhenRemovingPred.bind(this);
 		this.renderPreds = this.renderPreds.bind(this);
 	}
 
@@ -150,13 +150,14 @@ export class TaskAdd extends React.Component {
 	}
 
 
-	updateDependenciesWhenAddingTask(task){
+	updateDependenciesWhenAddingPred(taskId){
 		let dependencies = this.state.dependencies;
-		if(!dependencies.one((onetask) => onetask === task)){
-			dependencies.push(task);
+		let task = this.props.tasks.one((task) => task._id === taskId)
+		if(!dependencies.one((onetaskId) => onetaskId === taskId)){
+			dependencies.push(taskId);
 			if (task.dependencies){
 				for (let i = 0 ; i < task.dependencies.length ; i++){
-					if(!dependencies.one((onetask) => onetask == task.dependencies[i]))
+					if(!dependencies.one((onetaskId) => onetaskId == task.dependencies[i]))
 						dependencies.push(task.dependencies[i])
 				}
 			}
@@ -167,33 +168,36 @@ export class TaskAdd extends React.Component {
 	}
 
 	getPossiblePredecessors(){
-		let possiblePredecessors = this.props.tasks.filter((task) => {
-			if (this.state.predecessors.one((onetask) => onetask === task)){
+		let possiblePredecessorsTasks = this.props.tasks.filter((task) => {
+			if (this.state.predecessors.one((onetaskId) => onetaskId === task._id)){
 				return false;
 			}
 			return true; 
 		})
+		let possiblePredecessors = possiblePredecessorsTasks.map((task) => {
+			return task;
+		})
 		this.setState(() => ({ possiblePredecessors }))
 	}
 
-	addPredecessor(task) {
+	addPredecessor(taskId) {
 		let predecessors = this.state.predecessors;
-		predecessors.push(task);
+		predecessors.push(taskId);
 		this.setState(() => ({ predecessors }));
-		this.updateDependenciesWhenAddingTask(task);
+		this.updateDependenciesWhenAddingPred(taskId);
 	}
 
-	updateDependenciesWhenRemovingTask(){
+	updateDependenciesWhenRemovingPred(){
 		let dependencies = [];
 		for (let i = 0; i < this.state.predecessors.length; i++){
-			let pred = this.state.predecessors[i];
-			console.log(pred);
-			dependencies.push(pred);
+			let predId = this.state.predecessors[i];
+			dependencies.push(predId);
+			let pred = this.props.tasks.one((task) => task._id === predId);
 			if (pred.dependencies){
 				for (let j = 0; j < pred.dependencies.length; j++){
-					let dep = pred.dependencies[j];
-					if(!dependencies.one((onetask) => onetask === dep)) {
-						dependencies.push(dep)
+					let depId = pred.dependencies[j];
+					if(!dependencies.one((onetaskId) => onetaskId === depId)) {
+						dependencies.push(depId)
 					}
 				}
 			}
@@ -203,35 +207,37 @@ export class TaskAdd extends React.Component {
 		})
 	}
 
-	removePredecessor(task){
-		let predecessors = this.state.predecessors.filter((predTask) => {
-			if (predTask === task) {
+	removePredecessor(taskId){
+		let predecessors = this.state.predecessors.filter((predTaskId) => {
+			if (predTaskId === taskId) {
 				return false;
 			} else {
 				return true;
 			}
 		})
 		this.setState(() => ({ predecessors }), () => {
-			this.updateDependenciesWhenRemovingTask();
+			this.updateDependenciesWhenRemovingPred();
 		});
 	}
 
 	renderPossiblePreds() {
 		return this.state.possiblePredecessors.map((task) => {
-			return <div onClick={() => this.addPredecessor(task)} key={task._id}>{task.title}</div> 
-		})
+			return <div onClick={() => this.addPredecessor(task._id)} key={task._id}>{task.title}</div> 			
+		});
 	}
 
 	renderPreds() {
-		return this.state.predecessors.map((task) => {
-			return <div onClick={() => this.removePredecessor(task)} key={task._id}>{task.title}</div> 
+		let preds = this.state.predecessors.map((taskId) => {
+			return this.props.tasks.filter((onetask) => onetask._id === taskId)[0];
+		})
+		return preds.map((task) => {
+			return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
 		})
 	}
 
 	// FUNCTION TO REMOVE PREDS AND REUPDATE DEPENDENCIES
 
 	render() {
-		console.log(this.state);
 		return(
 			<div className="task__add">
 				<h1>ADD A TASK TO PROJECT</h1>

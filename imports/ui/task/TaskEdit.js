@@ -9,7 +9,7 @@ import 'react-dates/lib/css/_datepicker.css';
 
 import { DateRangePicker } from 'react-dates';
 
-export class TaskAdd extends React.Component {
+export class TaskEdit extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
@@ -25,7 +25,10 @@ export class TaskAdd extends React.Component {
 			quantity_unit: props.task ? props.task.quantity_unit : '',
 			rate: props.task ? props.task.rate : '',
 			inverted: props.task ? props.task.inverted : false,
-			calendarFocused: null
+			calendarFocused: null,
+			possiblePredecessors: [],
+			predecessors: props.task ? (props.task.predecessors ? props.task.predecessors : []) : [],
+			dependencies: props.task ? (props.task.dependencies ? props.task.dependencies : []) : []
 		}
 		this.handleTitleChange = this.handleTitleChange.bind(this);
 		this.handleTypeChange = this.handleTypeChange.bind(this);
@@ -38,6 +41,17 @@ export class TaskAdd extends React.Component {
 		this.handleInvertedChange = this.handleInvertedChange.bind(this);
 		this.onFocusChange = this.onFocusChange.bind(this);
 		this.onSubmit = this.onSubmit.bind(this);
+		this.renderPreds = this.renderPreds.bind(this);
+		this.renderPossiblePreds = this.renderPossiblePreds.bind(this);
+		this.getPossiblePredecessors = this.getPossiblePredecessors.bind(this);
+		this.addPredecessor = this.addPredecessor.bind(this);
+		this.removePredecessor = this.removePredecessor.bind(this);
+		this.updateDependenciesWhenAddingPred = this.updateDependenciesWhenAddingPred.bind(this);
+		this.updateDependenciesWhenRemovingPred = this.updateDependenciesWhenRemovingPred.bind(this);
+	}
+
+	componentDidMount() {
+		this.getPossiblePredecessors();
 	}
 
 	handleTitleChange(e) {
@@ -101,6 +115,7 @@ export class TaskAdd extends React.Component {
 
 	onSubmit(e) {
 		e.preventDefault();
+
 		this.props.call('tasks.update',this.props.task._id, {
 			title: this.state.title,
 			type: this.state.type,
@@ -114,7 +129,16 @@ export class TaskAdd extends React.Component {
 			quantity_unit: this.state.quantity_unit,
 			rate: parseInt(this.state.rate),
 			inverted: this.state.inverted,
-			});
+			predecessors: this.state.predecessors,
+			dependencies: this.state.dependencies
+			}, () => {
+					this.props.updateAllDependencies(this.props.task._id)
+				}
+			);
+		this.props.changeEditMode();
+
+
+
 		// this.setState({
 		// 	title: '',
 		// 	type: '',
@@ -128,10 +152,102 @@ export class TaskAdd extends React.Component {
 		// })
 	}
 
+	updateDependenciesWhenRemovingPred(){
+		let dependencies = [];
+		for (let i = 0; i < this.state.predecessors.length; i++){
+			let predId = this.state.predecessors[i];
+			dependencies.push(predId);
+			let pred = this.props.tasks.one((task) => task._id === predId);
+			if (pred.dependencies){
+				for (let j = 0; j < pred.dependencies.length; j++){
+					let depId = pred.dependencies[j];
+					if(!dependencies.one((onetaskId) => onetaskId === depId)) {
+						dependencies.push(depId)
+					}
+				}
+			}
+		}
+		this.setState(() => ({ dependencies }), () => {
+			this.getPossiblePredecessors();
+		})
+	}
+
+	updateDependenciesWhenAddingPred(taskId){
+		let dependencies = this.state.dependencies;
+		let task = this.props.tasks.one((task) => task._id === taskId)
+		if(!dependencies.one((onetaskId) => onetaskId === taskId)){
+			dependencies.push(taskId);
+			if (task.dependencies){
+				for (let i = 0 ; i < task.dependencies.length ; i++){
+					if(!dependencies.one((onetaskId) => onetaskId == task.dependencies[i]))
+						dependencies.push(task.dependencies[i])
+				}
+			}
+		}
+		this.setState(() => ({ dependencies }), () => {
+			this.getPossiblePredecessors();	
+		})
+	}
+
+	addPredecessor(taskId) {
+		let predecessors = this.state.predecessors;
+		predecessors.push(taskId);
+		this.setState(() => ({ predecessors }));
+		this.updateDependenciesWhenAddingPred(taskId);
+	}
+
+	getPossiblePredecessors() {
+		let possiblePredecessorsTasks = this.props.tasks.filter((task) => {
+			if (task._id === this.props.task._id){
+				return false;
+			} else if (this.state.predecessors.one((onetaskId) => onetaskId === task._id)){
+				return false;
+			} else {
+				if(task.dependencies.one((depId) => depId === this.props.task._id)) {
+					return false;
+				}
+			}
+			
+			return true; 
+		})
+		let possiblePredecessors = possiblePredecessorsTasks.map((task) => {
+			return task;
+		})
+		this.setState(() => ({ possiblePredecessors }))
+	}
+
+	removePredecessor(taskId){
+		let predecessors = this.state.predecessors.filter((predTaskId) => {
+			if (predTaskId === taskId) {
+				return false;
+			} else {
+				return true;
+			}
+		})
+		this.setState(() => ({ predecessors }), () => {
+			this.updateDependenciesWhenRemovingPred();
+		});
+	}
+
+	renderPossiblePreds() {
+		return this.state.possiblePredecessors.map((task) => {
+			return <div onClick={() => this.addPredecessor(task._id)} key={task._id}>{task.title}</div> 			
+		});
+	}
+
+	renderPreds() {
+		let preds = this.state.predecessors.map((taskId) => {
+			return this.props.tasks.filter((onetask) => onetask._id === taskId)[0];
+		})
+		return preds.map((task) => {
+			return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
+		})
+	}
+
 	render() {
 		return(
 			<div className="task__add">
-				<h1>ADD A TASK TO PROJECT</h1>
+				<h1>TASK EDIT</h1>
 				<div className="task__add-item">Title: <input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
 				<div className="task__add-item">Type: <input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
 				<div className="task__add-item">Starting pK: <input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
@@ -150,13 +266,17 @@ export class TaskAdd extends React.Component {
 				<div className="task__add-item">Quantity Unit: <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
 				<div className="task__add-item">Rate: <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
 
+				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div></div>
+
+				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.renderPreds() }</div></div>
+
 				<button className='admin__button' onClick={this.onSubmit}>Edit Task</button>
 			</div>
 			)
 	}
 };
 
-TaskAdd.PropTypes = {
+TaskEdit.PropTypes = {
 	call: PropTypes.func.isRequired
 };
 
@@ -164,4 +284,4 @@ export default createContainer(() => {
 	return {
 		call: Meteor.call
 	}
-}, TaskAdd)
+}, TaskEdit)

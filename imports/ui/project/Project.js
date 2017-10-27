@@ -15,15 +15,49 @@ export class Project extends React.Component {
 		super(props)
 		this.renderProject = this.renderProject.bind(this);
 		this.renderTasks = this.renderTasks.bind(this);
+		this.updateAllDependencies = this.updateAllDependencies.bind(this);
+	}
+
+	updateAllDependencies(taskId) {
+		for (let i = 0; i < this.props.tasks.length; i++){
+			let task = this.props.tasks[i];
+			let newDependencies = [];
+
+			const loopPreds = (task) => {
+				if(task.predecessors){
+					for (let j = 0; j < task.predecessors.length ; j++){
+						let predId = task.predecessors[j];
+						newDependencies.push(predId)
+						let pred = this.props.tasks.one((onetask) => onetask._id === predId);
+						if (pred.predecessors){
+							loopPreds(pred);
+						}
+					}
+				}
+			}
+
+			if(task.dependencies.one((onetaskId) => onetaskId === taskId)){
+				loopPreds(task);
+				let uniqueDependencies = newDependencies.filter(function(item, pos) {
+			    return newDependencies.indexOf(item) == pos;
+				});
+				this.props.call('tasks.update', task._id, {dependencies: uniqueDependencies});
+			}
+
+
+		}
 	}
 
 	renderTasks() {
 		return this.props.tasks.map((task) => {
-			return <TaskItem key={task._id} task={task} />
+			return <TaskItem key={task._id} task={task} tasks={this.props.tasks} updateAllDependencies={this.updateAllDependencies} />
 		})
 	}
 
+
+
 	renderProject() {
+		console.log(this.props.tasks);
 		return (
 				<div className="project">
 					<PlanCdf tasks={this.props.tasks} project={this.props.project} />
@@ -69,6 +103,7 @@ export default createContainer((props) => {
 	return {
 		loaded: subProject.ready() && subTasks.ready(),
 		project: Projects.findOne(props.match.params.id),
-		tasks: Tasks.find({}).fetch()
+		tasks: Tasks.find({}).fetch(),
+		call: Meteor.call
 	}	
 }, Project)

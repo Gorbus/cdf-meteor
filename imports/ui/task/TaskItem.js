@@ -12,10 +12,17 @@ export default class TaskItem extends React.Component{
 			editMode: false,
 			deleteMode: false
 		}
+		this.changeDeleteMode = this.changeDeleteMode.bind(this);
+		this.changeEditMode = this.changeEditMode.bind(this);
 	}
 
 	confirmDelete() {
 		Meteor.call('tasks.remove', this.props.task._id)
+	}
+
+	changeEditMode() {
+		const editMode = !this.state.editMode;
+		this.setState(() => ({ editMode }));
 	}
 
 	changeDeleteMode(){
@@ -40,8 +47,8 @@ export default class TaskItem extends React.Component{
 					<div className="task__data">{this.props.task.rate}</div>
 					<div className="task__data">{this.props.task.inverted.toString()}</div>
 					<button onClick={() => this.setState(() => ({editMode: true}))}>Edit Task</button>
-					{ this.state.deleteMode ? <div><button onClick={this.confirmDelete.bind(this)}>Confirm Delete</button><button onClick={this.changeDeleteMode.bind(this)}>Cancel Delete</button></div> : <button onClick={this.changeDeleteMode.bind(this)}>Delete Task</button>}
-					{ this.state.editMode ? <TaskEdit task={this.props.task} /> : undefined }
+					{ this.state.deleteMode ? <div><button onClick={this.confirmDelete.bind(this)}>Confirm Delete</button><button onClick={this.changeDeleteMode}>Cancel Delete</button></div> : <button onClick={this.changeDeleteMode.bind(this)}>Delete Task</button>}
+					{ this.state.editMode ? <TaskEdit task={this.props.task} tasks={this.props.tasks} changeEditMode={this.changeEditMode} updateAllDependencies={this.props.updateAllDependencies.bind(this)} /> : undefined }
 				</div>
 			)
 	}

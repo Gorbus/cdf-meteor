@@ -18,10 +18,10 @@ if (Meteor.isServer) {
 
 
 Meteor.methods({
-	'tasks.insert'(projectId, title, type, pk_start, pk_end, length, date_start, date_end, duration, dep_date_start, dep_date_end, dep_duration, quantity, quantity_unit, rate, inverted, color, comments, createdAt, updatedAt, predecessors, dependencies) {
+	'tasks.insert'(projectId, title, type, pk_start, pk_end, length, date_start, date_end, duration, dep_date_start, dep_date_end, dep_duration, quantity, quantity_unit, rate, inverted, color, comments, predecessors, dependencies) {
 		let userId = this.userId;
 		let username = Meteor.user().username;
-
+		console.log(predecessors, dependencies);
 		new SimpleSchema({
 			projectId: {
 				type: String,
@@ -100,10 +100,14 @@ Meteor.methods({
 				type: Array,
 				required: false
 			},
+			'predecessors.$': String,
 			dependencies:{
 				type: Array,
 				required: false
-			}
+			},
+			'dependencies.$': String,
+
+
 		}).validate({ projectId, title, type, pk_start, pk_end, length, date_start, date_end, duration, dep_date_start, dep_date_end, dep_duration, quantity, quantity_unit, rate, inverted, color, comments, predecessors, dependencies });
 
 		return Tasks.insert({
@@ -159,7 +163,8 @@ Meteor.methods({
 			},
 			type: {
 				type: String,
-				max: 280
+				max: 280,
+				optional: true
 			},
 			pk_start: {
 				type: Number,
@@ -225,10 +230,12 @@ Meteor.methods({
 				type: Array,
 				optional: true
 			},
+			'predecessors.$': String,
 			dependencies:{
 				type: Array,
 				optional: true
-			}
+			},
+			'dependencies.$': String
 		}).validate({_id, ...updates });
 
 		Tasks.update({
