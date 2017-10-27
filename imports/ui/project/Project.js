@@ -13,23 +13,69 @@ import PlanCdf from './../plan/PlanCdf';
 export class Project extends React.Component {
 	constructor(props){
 		super(props)
+		this.state = {
+			tasksOrder : []
+		}
 		this.renderProject = this.renderProject.bind(this);
 		this.renderTasks = this.renderTasks.bind(this);
 		this.updateAllDependencies = this.updateAllDependencies.bind(this);
+		this.updateAllPredsAfterRemovingATask = this.updateAllPredsAfterRemovingATask.bind(this);
+		this.updateAllDependenciesAfterRemovingATask = this.updateAllDependenciesAfterRemovingATask.bind(this);
+		this.getCalculationOrder = this.getCalculationOrder.bind(this);
 	}
+
+	componentDidUpdate(prevProps) {
+		if(prevProps != this.props){
+			console.log('yeah');
+			this.getCalculationOrder();
+		}
+	}
+
+	getCalculationOrder() {
+		let tasksOrder = []
+		for (let i = 0; i < this.props.tasks.length; i++){
+			const task = this.props.tasks[i]; 
+			if (task.dependencies.length === 0){
+				tasksOrder.push(task._id)
+			}
+		}
+		console.log(tasksOrder)
+		while (tasksOrder.length < this.props.tasks.length){
+			console.log(tasksOrder)
+			for (let i = 0; i < this.props.tasks.length; i++){
+				const task = this.props.tasks[i]; 
+				if (tasksOrder.indexOf(task._id) === -1){
+					let count = 0;
+					if (task.dependencies.length > 0){
+						for (let j = 0; j < task.dependencies.length; j++){
+							let depId = task.dependencies[j];
+							if (tasksOrder.indexOf(depId) > -1){
+								count = count + 1;
+							}
+						}
+						if (count === task.dependencies.length){
+							tasksOrder.push(task._id)
+						}
+					}
+				}
+			}
+		}
+		this.setState(() => ({tasksOrder}))
+		console.log(tasksOrder)
+	}
+
 
 	updateAllDependencies(taskId) {
 		for (let i = 0; i < this.props.tasks.length; i++){
 			let task = this.props.tasks[i];
 			let newDependencies = [];
-
 			const loopPreds = (task) => {
-				if(task.predecessors){
+				if(task.predecessors.length > 0){
 					for (let j = 0; j < task.predecessors.length ; j++){
 						let predId = task.predecessors[j];
 						newDependencies.push(predId)
 						let pred = this.props.tasks.one((onetask) => onetask._id === predId);
-						if (pred.predecessors){
+						if (pred.predecessors.length > 0){
 							loopPreds(pred);
 						}
 					}
@@ -48,9 +94,52 @@ export class Project extends React.Component {
 		}
 	}
 
+	updateAllPredsAfterRemovingATask(taskId) {
+		for (let i = 0; i < this.props.tasks.length; i++){
+			let task = this.props.tasks[i];
+			if (task.predecessors.length > 0){
+				let newPreds = task.predecessors.filter((predId) => predId != taskId)
+				this.props.call('tasks.update', task._id, { predecessors : newPreds})
+			}
+		}
+		this.updateAllDependenciesAfterRemovingATask(taskId)
+	}
+
+	updateAllDependenciesAfterRemovingATask(taskId) {
+		for (let i = 0; i < this.props.tasks.length; i++){
+			let task = this.props.tasks[i];
+			let newDependencies = [];
+			const loopPreds = (task) => {
+				if(task.predecessors.length > 0){
+					for (let j = 0; j < task.predecessors.length ; j++){
+						let predId = task.predecessors[j];
+						if (predId != taskId){
+							newDependencies.push(predId)
+							let pred = this.props.tasks.one((onetask) => onetask._id === predId);
+							if (pred.predecessors.length > 0){
+								loopPreds(pred);
+							}
+						}
+					}
+				}
+			}
+
+			if(task.dependencies.one((onetaskId) => onetaskId === taskId)){
+				loopPreds(task);
+				let uniqueDependencies = newDependencies.filter(function(item, pos) {
+			    return newDependencies.indexOf(item) == pos;
+				});
+				this.props.call('tasks.update', task._id, {dependencies: uniqueDependencies});
+			}
+		}
+	}
+
+
+
+
 	renderTasks() {
 		return this.props.tasks.map((task) => {
-			return <TaskItem key={task._id} task={task} tasks={this.props.tasks} updateAllDependencies={this.updateAllDependencies} />
+			return <TaskItem key={task._id} task={task} tasks={this.props.tasks} updateAllDependencies={this.updateAllDependencies} updateAllPredsAfterRemovingATask={this.updateAllPredsAfterRemovingATask} />
 		})
 	}
 

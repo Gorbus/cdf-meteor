@@ -21,7 +21,6 @@ Meteor.methods({
 	'tasks.insert'(projectId, title, type, pk_start, pk_end, length, date_start, date_end, duration, dep_date_start, dep_date_end, dep_duration, quantity, quantity_unit, rate, inverted, color, comments, predecessors, dependencies) {
 		let userId = this.userId;
 		let username = Meteor.user().username;
-		console.log(predecessors, dependencies);
 		new SimpleSchema({
 			projectId: {
 				type: String,
@@ -266,5 +265,7 @@ Meteor.methods({
 			_id,
 			userId: this.userId
 		})
+
+		return _id;
 	}
 })

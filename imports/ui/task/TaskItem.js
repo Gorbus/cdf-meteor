@@ -17,7 +17,7 @@ export default class TaskItem extends React.Component{
 	}
 
 	confirmDelete() {
-		Meteor.call('tasks.remove', this.props.task._id)
+		Meteor.call('tasks.remove', this.props.task._id, (err, res) => this.props.updateAllPredsAfterRemovingATask(res));
 	}
 
 	changeEditMode() {
