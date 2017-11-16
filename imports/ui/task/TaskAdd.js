@@ -4,6 +4,7 @@ import { createContainer } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
+import { CompactPicker } from 'react-color';
 
 import 'react-dates/lib/css/_datepicker.css';
 
@@ -25,6 +26,7 @@ export class TaskAdd extends React.Component {
 			quantity_unit: '',
 			rate: '',
 			inverted: false,
+			color: 'black',
 			calendarFocused: null,
 			possiblePredecessors: this.props.tasks ? this.props.tasks : [],
 			predecessors: [],
@@ -47,6 +49,7 @@ export class TaskAdd extends React.Component {
 		this.updateDependenciesWhenAddingPred = this.updateDependenciesWhenAddingPred.bind(this);
 		this.updateDependenciesWhenRemovingPred = this.updateDependenciesWhenRemovingPred.bind(this);
 		this.renderPreds = this.renderPreds.bind(this);
+		this.handleChangeColor = this.handleChangeColor.bind(this);
 	}
 
 	componentWillReceiveProps(){
@@ -131,11 +134,13 @@ export class TaskAdd extends React.Component {
 			this.state.quantity_unit,
 			parseInt(this.state.rate),
 			this.state.inverted,
-			null,
+			this.state.color,
 			null,
 			this.state.predecessors,
 			this.state.dependencies
-			);
+			, () => {
+				this.props.updateAfterChange();
+			});
 		// this.setState({
 		// 	title: '',
 		// 	type: '',
@@ -169,7 +174,7 @@ export class TaskAdd extends React.Component {
 
 	getPossiblePredecessors(){
 		let possiblePredecessorsTasks = this.props.tasks.filter((task) => {
-			if (this.state.predecessors.one((onetaskId) => onetaskId === task._id)){
+			if (this.state.predecessors.one((pred) => pred.id === task._id)){
 				return false;
 			}
 			return true; 
@@ -180,17 +185,17 @@ export class TaskAdd extends React.Component {
 		this.setState(() => ({ possiblePredecessors }))
 	}
 
-	addPredecessor(taskId) {
+	addPredecessor(id, type) {
 		let predecessors = this.state.predecessors;
-		predecessors.push(taskId);
+		predecessors.push({id, type, delay : 0});
 		this.setState(() => ({ predecessors }));
-		this.updateDependenciesWhenAddingPred(taskId);
+		this.updateDependenciesWhenAddingPred(id);
 	}
 
 	updateDependenciesWhenRemovingPred(){
 		let dependencies = [];
 		for (let i = 0; i < this.state.predecessors.length; i++){
-			let predId = this.state.predecessors[i];
+			let predId = this.state.predecessors[i].id;
 			dependencies.push(predId);
 			let pred = this.props.tasks.one((task) => task._id === predId);
 			if (pred.dependencies){
@@ -208,8 +213,8 @@ export class TaskAdd extends React.Component {
 	}
 
 	removePredecessor(taskId){
-		let predecessors = this.state.predecessors.filter((predTaskId) => {
-			if (predTaskId === taskId) {
+		let predecessors = this.state.predecessors.filter((pred) => {
+			if (pred.id === taskId) {
 				return false;
 			} else {
 				return true;
@@ -222,18 +227,23 @@ export class TaskAdd extends React.Component {
 
 	renderPossiblePreds() {
 		return this.state.possiblePredecessors.map((task) => {
-			return <div onClick={() => this.addPredecessor(task._id)} key={task._id}>{task.title}</div> 			
+			return <div key={task._id}>{task.title} <div onClick={() => this.addPredecessor(task._id, 'asap')}>ASAP</div><div onClick={() => this.addPredecessor(task._id, 'after')}>AFTER</div></div> 			
 		});
 	}
 
 	renderPreds() {
-		let preds = this.state.predecessors.map((taskId) => {
-			return this.props.tasks.filter((onetask) => onetask._id === taskId)[0];
+		let preds = this.state.predecessors.map((pred) => {
+			return this.props.tasks.filter((onetask) => onetask._id === pred.id)[0];
 		})
 		return preds.map((task) => {
 			return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
 		})
 	}
+
+	handleChangeColor(color) {
+	  this.setState(() => ({ color: color.hex }));
+	};
+
 
 	// FUNCTION TO REMOVE PREDS AND REUPDATE DEPENDENCIES
 
@@ -259,7 +269,10 @@ export class TaskAdd extends React.Component {
 				<div className="task__add-item"><h2>Quantity Unit:</h2> <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
 				<div className="task__add-item"><h2>Rate:</h2> <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
 				<div className="task__add-item"><h2>Inverted:</h2> <input type="checkbox" onChange={this.handleInvertedChange} /></div>
-
+	      <CompactPicker
+	        color={ this.state.color }
+	        onChangeComplete={ this.handleChangeComplete }
+	      />
 				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div></div>
 
 				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.renderPreds() }</div></div>

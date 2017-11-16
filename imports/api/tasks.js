@@ -99,7 +99,10 @@ Meteor.methods({
 				type: Array,
 				required: false
 			},
-			'predecessors.$': String,
+			'predecessors.$': Object,
+			'predecessors.$.type': String,
+			'predecessors.$.id' : String,
+			'predecessors.$.delay' : Number,
 			dependencies:{
 				type: Array,
 				required: false
@@ -229,7 +232,10 @@ Meteor.methods({
 				type: Array,
 				optional: true
 			},
-			'predecessors.$': String,
+			'predecessors.$': Object,
+			'predecessors.$.type': String,
+			'predecessors.$.id' : String,
+			'predecessors.$.delay' : Number,
 			dependencies:{
 				type: Array,
 				optional: true

@@ -41,11 +41,14 @@ export default class TaskItem extends React.Component{
 					<div className="task__data">{this.props.task.length}</div>	
 					<div className="task__data">{moment(this.props.task.date_start).format('DD/MM/YYYY')}</div>	
 					<div className="task__data">{moment(this.props.task.date_end).format('DD/MM/YYYY')}</div>	
+					<div className="task__data">{moment(this.props.task.dep_date_start).format('DD/MM/YYYY')}</div>	
+					<div className="task__data">{moment(this.props.task.dep_date_end).format('DD/MM/YYYY')}</div>	
 					<div className="task__data">{this.props.task.duration / 1000 / 60 / 60 / 24}</div>	
 					<div className="task__data">{this.props.task.quantity}</div>	
 					<div className="task__data">{this.props.task.quantity_unit}</div>	
 					<div className="task__data">{this.props.task.rate}</div>
 					<div className="task__data">{this.props.task.inverted.toString()}</div>
+					<div className="task__data">{this.props.task.color}</div>
 					<button onClick={() => this.setState(() => ({editMode: true}))}>Edit Task</button>
 					{ this.state.deleteMode ? <div><button onClick={this.confirmDelete.bind(this)}>Confirm Delete</button><button onClick={this.changeDeleteMode}>Cancel Delete</button></div> : <button onClick={this.changeDeleteMode.bind(this)}>Delete Task</button>}
 					{ this.state.editMode ? <TaskEdit task={this.props.task} tasks={this.props.tasks} changeEditMode={this.changeEditMode} updateAllDependencies={this.props.updateAllDependencies.bind(this)} /> : undefined }

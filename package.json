@@ -12,6 +12,7 @@
     "raphael": "^2.2.7",
     "react": "^16.0.0",
     "react-addons-shallow-compare": "^15.6.2",
+    "react-color": "^2.13.8",
     "react-dates": "^13.0.3",
     "react-dom": "^16.0.0",
     "react-raphael": "^0.9.0",

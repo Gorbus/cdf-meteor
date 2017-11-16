@@ -4,6 +4,8 @@ import { createContainer } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
+import { CompactPicker } from 'react-color';
+
 
 import 'react-dates/lib/css/_datepicker.css';
 
@@ -18,13 +20,14 @@ export class TaskEdit extends React.Component {
 			pk_start: props.task ? props.task.pk_start : '',
 			pk_end: props.task ? props.task.pk_end : '',
 			length: props.task ? props.task.length : '',
-			date_start: props.task ? moment.unix(props.task.date_start) : moment(),
-			date_end: props.task ? moment.unix(props.task.date_end) : moment(),
+			date_start: props.task ? moment(props.task.date_start) : moment(),
+			date_end: props.task ? moment(props.task.date_end) : moment(),
 			duration: props.task ? props.task.duration : '',
 			quantity: props.task ? props.task.quantity : '',
 			quantity_unit: props.task ? props.task.quantity_unit : '',
 			rate: props.task ? props.task.rate : '',
 			inverted: props.task ? props.task.inverted : false,
+			color: props.task ? props.task.color : "black",
 			calendarFocused: null,
 			possiblePredecessors: [],
 			predecessors: props.task ? (props.task.predecessors ? props.task.predecessors : []) : [],
@@ -48,6 +51,7 @@ export class TaskEdit extends React.Component {
 		this.removePredecessor = this.removePredecessor.bind(this);
 		this.updateDependenciesWhenAddingPred = this.updateDependenciesWhenAddingPred.bind(this);
 		this.updateDependenciesWhenRemovingPred = this.updateDependenciesWhenRemovingPred.bind(this);
+		this.handleChangeColor = this.handleChangeColor.bind(this);
 	}
 
 	componentDidMount() {
@@ -115,20 +119,20 @@ export class TaskEdit extends React.Component {
 
 	onSubmit(e) {
 		e.preventDefault();
-
 		this.props.call('tasks.update',this.props.task._id, {
 			title: this.state.title,
 			type: this.state.type,
 			pk_start: parseInt(this.state.pk_start),
 			pk_end: parseInt(this.state.pk_end),
 			length: parseInt(this.state.length),
-			date_start: this.state.date_start.unix(),
-			date_end: this.state.date_end.unix(),
+			date_start: this.state.date_start.valueOf(),
+			date_end: this.state.date_end.valueOf(),
 			duration : parseInt(this.state.duration),
 			quantity: parseInt(this.state.quantity),
 			quantity_unit: this.state.quantity_unit,
 			rate: parseInt(this.state.rate),
 			inverted: this.state.inverted,
+			color: this.state.color,
 			predecessors: this.state.predecessors,
 			dependencies: this.state.dependencies
 			}, () => {
@@ -136,26 +140,12 @@ export class TaskEdit extends React.Component {
 				}
 			);
 		this.props.changeEditMode();
-
-
-
-		// this.setState({
-		// 	title: '',
-		// 	type: '',
-		// 	country: '',
-		// 	length: '',
-		// 	pk_start: '',
-		// 	pk_end: '',
-		// 	date_start: '',
-		// 	date_end: '',
-		// 	duration: '',
-		// })
 	}
 
 	updateDependenciesWhenRemovingPred(){
 		let dependencies = [];
 		for (let i = 0; i < this.state.predecessors.length; i++){
-			let predId = this.state.predecessors[i];
+			let predId = this.state.predecessors[i].id;
 			dependencies.push(predId);
 			let pred = this.props.tasks.one((task) => task._id === predId);
 			if (pred.dependencies){
@@ -189,25 +179,24 @@ export class TaskEdit extends React.Component {
 		})
 	}
 
-	addPredecessor(taskId) {
+	addPredecessor(id, type) {
 		let predecessors = this.state.predecessors;
-		predecessors.push(taskId);
+		predecessors.push({id, type, delay : 0});
 		this.setState(() => ({ predecessors }));
-		this.updateDependenciesWhenAddingPred(taskId);
+		this.updateDependenciesWhenAddingPred(id);
 	}
 
 	getPossiblePredecessors() {
 		let possiblePredecessorsTasks = this.props.tasks.filter((task) => {
 			if (task._id === this.props.task._id){
 				return false;
-			} else if (this.state.predecessors.one((onetaskId) => onetaskId === task._id)){
+			} else if (this.state.predecessors.one((pred) => pred.id === task._id)){
 				return false;
 			} else {
 				if(task.dependencies.one((depId) => depId === this.props.task._id)) {
 					return false;
 				}
 			}
-			
 			return true; 
 		})
 		let possiblePredecessors = possiblePredecessorsTasks.map((task) => {
@@ -218,7 +207,7 @@ export class TaskEdit extends React.Component {
 
 	removePredecessor(taskId){
 		let predecessors = this.state.predecessors.filter((predTaskId) => {
-			if (predTaskId === taskId) {
+			if (predTaskId.id === taskId) {
 				return false;
 			} else {
 				return true;
@@ -231,18 +220,25 @@ export class TaskEdit extends React.Component {
 
 	renderPossiblePreds() {
 		return this.state.possiblePredecessors.map((task) => {
-			return <div onClick={() => this.addPredecessor(task._id)} key={task._id}>{task.title}</div> 			
+			return <div key={task._id}>{task.title} <div onClick={() => this.addPredecessor(task._id, 'asap')}>ASAP</div><div onClick={() => this.addPredecessor(task._id, 'after')}>AFTER</div></div> 			
 		});
 	}
 
 	renderPreds() {
-		let preds = this.state.predecessors.map((taskId) => {
-			return this.props.tasks.filter((onetask) => onetask._id === taskId)[0];
+		let preds = this.state.predecessors.map((pred) => {
+			return this.props.tasks.filter((onetask) => onetask._id === pred.id)[0];
 		})
-		return preds.map((task) => {
-			return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
-		})
+		if (preds){
+			return preds.map((task) => {
+				return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
+			})	
+		}
 	}
+
+	handleChangeColor(color) {
+		console.log(color.hex);
+	  this.setState(() => ({ color: color.hex }));
+	};
 
 	render() {
 		return(
@@ -265,10 +261,14 @@ export class TaskEdit extends React.Component {
 				<div className="task__add-item">Quantity: <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Duration" type="text"/></div>
 				<div className="task__add-item">Quantity Unit: <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
 				<div className="task__add-item">Rate: <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
+				<div className="task__add-item"><h2>Inverted:</h2> <input type="checkbox" checked={this.state.inverted} onChange={this.handleInvertedChange} /></div>
+	      <CompactPicker
+	        color={ this.state.color }
+	        onChangeComplete={ this.handleChangeColor }
+	      />
+				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.props.task ? this.renderPossiblePreds(): undefined }</div></div>
 
-				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div></div>
-
-				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.renderPreds() }</div></div>
+				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.props.task.predecessors ? this.renderPreds(): undefined }</div></div>
 
 				<button className='admin__button' onClick={this.onSubmit}>Edit Task</button>
 			</div>

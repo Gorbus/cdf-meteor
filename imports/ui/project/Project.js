@@ -22,16 +22,116 @@ export class Project extends React.Component {
 		this.updateAllPredsAfterRemovingATask = this.updateAllPredsAfterRemovingATask.bind(this);
 		this.updateAllDependenciesAfterRemovingATask = this.updateAllDependenciesAfterRemovingATask.bind(this);
 		this.getCalculationOrder = this.getCalculationOrder.bind(this);
+		this.updateDepDates = this.updateDepDates.bind(this);
+		this.updateAfterChange = this.updateAfterChange.bind(this);
 	}
 
-	componentDidUpdate(prevProps) {
-		if(prevProps != this.props){
-			console.log('yeah');
-			this.getCalculationOrder();
+	updateAfterChange() {
+		this.getCalculationOrder(this.updateDepDates);
+	}
+
+	updateDepDates(){
+		console.log(this.state.tasksOrder);
+		for (let i = 0; i < this.state.tasksOrder.length; i++){
+			let task = this.props.tasks.one((onetask) => onetask._id === this.state.tasksOrder[i]);
+			if(!task.dependencies || (task.dependencies.length === 0)){
+				this.props.call('tasks.update', task._id, {
+					dep_date_start : task.date_start,
+					dep_date_end : task.date_end,
+					dep_duration : task.duration
+				})
+			} else {
+				console.log('debut calculs');
+				let new_dep_date_start = task.date_start;
+				let new_dep_date_end = task.date_end;
+				let new_dep_duration = task.duration;
+				let rolling_date_start = new_dep_date_start;
+				let rolling_date_end = new_dep_date_end;
+				for (let j = 0; j < task.predecessors.length; j++){
+					let pred = this.props.tasks.one((onetask) => onetask._id === task.predecessors[j].id);
+					let delay = task.predecessors[j].delay;
+					let type = task.predecessors[j].type
+					if (type === 'after') {
+						console.log('after');
+						console.log(task);
+						console.log(pred);
+						if (pred.dep_date_end && (pred.dep_date_end > new_dep_date_start)){
+							new_dep_date_start = pred.dep_date_end + delay;
+							new_dep_date_end = new_dep_date_start + new_dep_duration;
+						}
+					} else if(type === 'asap') {
+						console.log('asap');
+						console.log(task);
+						console.log(pred);
+						if (!((task.pk_end < pred.pk_start) || (task.pk_start > pred.pk_end))) {
+							console.log('calculs asap');
+							let coefPred = pred.dep_duration / pred.length;
+							let coefTask = task.dep_duration / task.length;
+							if (!task.inverted) {
+								if (!pred.inverted) {
+									if (coefPred > coefTask) {
+										if( task.pk_end >= pred.pk_end) {
+											new_dep_date_start = pred.dep_date_end - (pred.pk_end - task.pk_start) * coefTask + delay;
+										} else if (task.pk_end < pred.pk_end){
+											new_dep_date_start = pred.dep_date_start + coefPred * (task.pk_end - pred.pk_start) - coefTask * (task.length) + delay;
+										}
+									} else if (coefPred <= coefTask) {
+										if (task.pk_start <= pred.pk_start){
+											new_dep_date_start = pred.dep_date_start - coefTask * (pred.pk_start - task.pk_start) + delay;
+										} else if (task.pk_start > pred.pk_start) {
+											new_dep_date_start = pred.dep_date_start + coefPred * (task.pk_start - pred.pk_start) + delay;
+										}
+
+									}
+								} else if (pred.inverted){
+									if (task.pk_start <= pred.pk_start) {
+										new_dep_date_start = pred.dep_date_end - coefTask * (pred.pk_start - task.pk_start) + delay;
+									}	else if (task.pk_start > pred.pk_start) {
+										new_dep_date_start = pred.dep_date_start + coefPred * (pred.pk_end - task.pk_start) + delay;
+									}
+								}
+							} else if (task.inverted){
+								if (!pred.inverted) {
+									if (task.pk_end >= pred.pk_end){
+										new_dep_date_start = pred.dep_date_end - coefTask * (task.pk_end - pred.pk_end) + delay;
+									} else if (task.pk_end < pred.pk_end){
+										new_dep_date_start = pred.dep_date_start + coefPred * (task.pk_end - pred.pk_start) + delay;
+									}
+								} else if (pred.inverted) {
+									if (coefPred > coefTask) {
+										if (task.pk_start <= pred.pk_start) {
+											new_dep_date_start = pred.dep_date_end - coefTask * (task.pk_end - pred.pk_start) + delay;
+										}	else if (task.pk_start > pred.pk_start) {
+											new_dep_date_start = pred.dep_date_end - coefPred * (task.pk_start - pred.pk_start) + delay;
+										}
+									} else if (coefPred <= coefTask) {
+										if (task.pk_end >= pred.pk_end) {
+											new_dep_date_start = pred.dep_date_start - coefTask * (task.pk_end - pred.pk_end) + delay;
+										}	else if (task.pk_end < pred.pk_end) {
+											new_dep_date_start = pred.dep_date_start + coefPred * (pred.pk_end - task.pk_end) + delay;
+										}
+									}
+								}
+							}
+							new_dep_date_end = new_dep_date_start + coefTask * task.length;
+						}
+					}
+					if (new_dep_date_start > rolling_date_start){
+						rolling_date_start = new_dep_date_start;
+						rolling_date_end = new_dep_date_end;
+					}
+				}
+				if ((rolling_date_start != task.dep_date_start) || (rolling_date_end != task.dep_date_end)) {
+					console.log('ici?');
+					console.log(new_dep_date_start);
+					console.log(new_dep_date_end);
+					this.props.call('tasks.update', task._id, { dep_date_start : rolling_date_start, dep_date_end : rolling_date_end, dep_duration : new_dep_duration})
+				}
+			}
 		}
 	}
 
-	getCalculationOrder() {
+	getCalculationOrder(callback) {
 		let tasksOrder = []
 		for (let i = 0; i < this.props.tasks.length; i++){
 			const task = this.props.tasks[i]; 
@@ -39,9 +139,7 @@ export class Project extends React.Component {
 				tasksOrder.push(task._id)
 			}
 		}
-		console.log(tasksOrder)
 		while (tasksOrder.length < this.props.tasks.length){
-			console.log(tasksOrder)
 			for (let i = 0; i < this.props.tasks.length; i++){
 				const task = this.props.tasks[i]; 
 				if (tasksOrder.indexOf(task._id) === -1){
@@ -61,7 +159,9 @@ export class Project extends React.Component {
 			}
 		}
 		this.setState(() => ({tasksOrder}))
-		console.log(tasksOrder)
+		if(callback){
+			callback()
+		}
 	}
 
 
@@ -75,7 +175,7 @@ export class Project extends React.Component {
 						let predId = task.predecessors[j];
 						newDependencies.push(predId)
 						let pred = this.props.tasks.one((onetask) => onetask._id === predId);
-						if (pred.predecessors.length > 0){
+						if (pred && pred.predecessors && pred.predecessors.length > 0){
 							loopPreds(pred);
 						}
 					}
@@ -87,11 +187,13 @@ export class Project extends React.Component {
 				let uniqueDependencies = newDependencies.filter(function(item, pos) {
 			    return newDependencies.indexOf(item) == pos;
 				});
-				this.props.call('tasks.update', task._id, {dependencies: uniqueDependencies});
+				if (uniqueDependencies && uniqueDependencies.length > 0){
+					this.props.call('tasks.update', task._id, {dependencies: uniqueDependencies});
+				}
 			}
-
-
 		}
+		let self = this;
+		setTimeout(() => self.updateAfterChange(), 1);
 	}
 
 	updateAllPredsAfterRemovingATask(taskId) {
@@ -110,13 +212,13 @@ export class Project extends React.Component {
 			let task = this.props.tasks[i];
 			let newDependencies = [];
 			const loopPreds = (task) => {
-				if(task.predecessors.length > 0){
+				if(task && task.predecessors.length > 0){
 					for (let j = 0; j < task.predecessors.length ; j++){
-						let predId = task.predecessors[j];
+						let predId = task.predecessors[j].id;
 						if (predId != taskId){
 							newDependencies.push(predId)
 							let pred = this.props.tasks.one((onetask) => onetask._id === predId);
-							if (pred.predecessors.length > 0){
+							if (pred && pred.predecessors.length > 0){
 								loopPreds(pred);
 							}
 						}
@@ -132,6 +234,8 @@ export class Project extends React.Component {
 				this.props.call('tasks.update', task._id, {dependencies: uniqueDependencies});
 			}
 		}
+		let self = this;
+		setTimeout(() => self.updateAfterChange(), 1);
 	}
 
 
@@ -158,17 +262,20 @@ export class Project extends React.Component {
 						<div className="task__data">Ending pK</div>	
 						<div className="task__data">Length</div>	
 						<div className="task__data">Starting Date</div>	
-						<div className="task__data">Ending Date</div>	
+						<div className="task__data">Ending Date</div>
+						<div className="task__data">DEP Starting Date</div>	
+						<div className="task__data">DEP Ending Date</div>
 						<div className="task__data">Duration</div>	
 						<div className="task__data">Quantity</div>	
 						<div className="task__data">Quantity Unit</div>	
 						<div className="task__data">Rate</div>
 						<div className="task__data">Inverted</div>
+						<div className="task__data">Color</div>
 						<div className="task__data">Edit</div>
 						<div className="task__data">Delete</div>
 				</div>
 					{this.props.tasks.length > 0 ? this.renderTasks() : <p>No task for this project</p>}
-					<TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} />
+					<TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} />
 				</div>
 			)
 	}
