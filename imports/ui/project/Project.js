@@ -32,39 +32,38 @@ export class Project extends React.Component {
 
 	updateDepDates(){
 		console.log(this.state.tasksOrder);
+		let tasks = this.props.tasks;
+		tasksToUpdate = []
+
+
 		for (let i = 0; i < this.state.tasksOrder.length; i++){
-			let task = this.props.tasks.one((onetask) => onetask._id === this.state.tasksOrder[i]);
+			let task = tasks.one((onetask) => onetask._id === this.state.tasksOrder[i]);
 			if(!task.dependencies || (task.dependencies.length === 0)){
-				this.props.call('tasks.update', task._id, {
-					dep_date_start : task.date_start,
-					dep_date_end : task.date_end,
-					dep_duration : task.duration
-				})
+				task.dep_date_start = task.date_start;
+				task.dep_date_end = task.date_end;
+				task.dep_duration = task.duration;
+				tasksToUpdate.push(task);
 			} else {
-				console.log('debut calculs');
+				console.log('ici ?');
+				console.log(task.title);
 				let new_dep_date_start = task.date_start;
 				let new_dep_date_end = task.date_end;
 				let new_dep_duration = task.duration;
 				let rolling_date_start = new_dep_date_start;
 				let rolling_date_end = new_dep_date_end;
 				for (let j = 0; j < task.predecessors.length; j++){
-					let pred = this.props.tasks.one((onetask) => onetask._id === task.predecessors[j].id);
+					let pred = tasks.one((onetask) => onetask._id === task.predecessors[j].id);
 					let delay = task.predecessors[j].delay;
 					let type = task.predecessors[j].type
 					if (type === 'after') {
 						console.log('after');
-						console.log(task);
-						console.log(pred);
 						if (pred.dep_date_end && (pred.dep_date_end > new_dep_date_start)){
 							new_dep_date_start = pred.dep_date_end + delay;
 							new_dep_date_end = new_dep_date_start + new_dep_duration;
+							console.log(new_dep_date_start, new_dep_date_end)
 						}
 					} else if(type === 'asap') {
-						console.log('asap');
-						console.log(task);
-						console.log(pred);
 						if (!((task.pk_end < pred.pk_start) || (task.pk_start > pred.pk_end))) {
-							console.log('calculs asap');
 							let coefPred = pred.dep_duration / pred.length;
 							let coefTask = task.dep_duration / task.length;
 							if (!task.inverted) {
@@ -122,12 +121,16 @@ export class Project extends React.Component {
 					}
 				}
 				if ((rolling_date_start != task.dep_date_start) || (rolling_date_end != task.dep_date_end)) {
-					console.log('ici?');
-					console.log(new_dep_date_start);
-					console.log(new_dep_date_end);
-					this.props.call('tasks.update', task._id, { dep_date_start : rolling_date_start, dep_date_end : rolling_date_end, dep_duration : new_dep_duration})
+					task.dep_date_start = rolling_date_start;
+					task.dep_date_end = rolling_date_end;
+					task.dep_duration = new_dep_duration;
+					tasksToUpdate.push(task);
 				}
 			}
+		}
+		for (let k = 0; k < tasksToUpdate.length; k++){
+			let task = tasksToUpdate[k];
+			this.props.call('tasks.update', task._id, {dep_date_start : task.dep_date_start, dep_date_end: task.dep_date_end, dep_duration: task.dep_duration})
 		}
 	}
 
@@ -172,7 +175,7 @@ export class Project extends React.Component {
 			const loopPreds = (task) => {
 				if(task.predecessors.length > 0){
 					for (let j = 0; j < task.predecessors.length ; j++){
-						let predId = task.predecessors[j];
+						let predId = task.predecessors[j].id;
 						newDependencies.push(predId)
 						let pred = this.props.tasks.one((onetask) => onetask._id === predId);
 						if (pred && pred.predecessors && pred.predecessors.length > 0){

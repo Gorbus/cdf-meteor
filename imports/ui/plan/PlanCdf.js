@@ -53,12 +53,10 @@ export default class PlanCdf extends React.Component {
 				coords = "M" + (this.state.paperMargin + (task.pk_start - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMargin - endDate * this.state.paperScaleHeight) + 'L' + (this.state.paperMargin + (task.pk_end - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMargin - startDate * this.state.paperScaleHeight);
 			}
 			var self = this;
-			console.log(task.color);
 			let attr = {
 				"stroke": task.color,
 				"stroke-width" : "3"
 			}
-			console.log(attr);
 			return <Path mouseover={function() { return self.onmouseover(this, task) }} mouseout={function() { return self.onmouseout(this) }} key={task._id} d={coords} attr={attr} />
 		})
 	}

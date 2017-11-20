@@ -119,6 +119,7 @@ export class TaskEdit extends React.Component {
 
 	onSubmit(e) {
 		e.preventDefault();
+		console.log(this.state.dependencies);
 		this.props.call('tasks.update',this.props.task._id, {
 			title: this.state.title,
 			type: this.state.type,

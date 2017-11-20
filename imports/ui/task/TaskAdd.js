@@ -140,18 +140,22 @@ export class TaskAdd extends React.Component {
 			this.state.dependencies
 			, () => {
 				this.props.updateAfterChange();
+				this.setState({
+					title: '',
+					type: '',
+					country: '',
+					length: '',
+					pk_start: '',
+					pk_end: '',
+					date_start: moment(),
+					date_end: moment(),
+					duration: '',
+					inverted: false,
+					color: "black",
+					predecessors: [],
+					dependencies: []
+				})
 			});
-		// this.setState({
-		// 	title: '',
-		// 	type: '',
-		// 	country: '',
-		// 	length: '',
-		// 	pk_start: '',
-		// 	pk_end: '',
-		// 	date_start: '',
-		// 	date_end: '',
-		// 	duration: '',
-		// })
 	}
 
 
@@ -271,7 +275,7 @@ export class TaskAdd extends React.Component {
 				<div className="task__add-item"><h2>Inverted:</h2> <input type="checkbox" onChange={this.handleInvertedChange} /></div>
 	      <CompactPicker
 	        color={ this.state.color }
-	        onChangeComplete={ this.handleChangeComplete }
+	        onChangeComplete={ this.handleChangeColor }
 	      />
 				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div></div>
 
