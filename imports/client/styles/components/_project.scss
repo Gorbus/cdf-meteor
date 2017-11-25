@@ -1,0 +1,11 @@
+.project {
+	@include flex(1);
+}
+
+.project-content {
+	padding-top: $space;
+}
+
+.project__main-view {
+	@include flexbox;
+}

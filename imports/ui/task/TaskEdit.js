@@ -6,6 +6,8 @@ import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
 import { CompactPicker } from 'react-color';
 
+import PossiblePreds from './PossiblePreds';
+import PredItem from './PredItem';
 
 import 'react-dates/lib/css/_datepicker.css';
 
@@ -221,18 +223,18 @@ export class TaskEdit extends React.Component {
 
 	renderPossiblePreds() {
 		return this.state.possiblePredecessors.map((task) => {
-			return <div key={task._id}>{task.title} <div onClick={() => this.addPredecessor(task._id, 'asap')}>ASAP</div><div onClick={() => this.addPredecessor(task._id, 'after')}>AFTER</div></div> 			
+			return <PossiblePreds key={task._id} task={task} addPredecessor={this.addPredecessor} />		
 		});
 	}
 
 	renderPreds() {
-		let preds = this.state.predecessors.map((pred) => {
-			return this.props.tasks.filter((onetask) => onetask._id === pred.id)[0];
-		})
-		if (preds){
-			return preds.map((task) => {
-				return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
-			})	
+		if(this.state.predecessors && this.state.predecessors.length > 0){
+				let preds = this.state.predecessors.map((pred) => {
+					return [this.props.tasks.filter((onetask) => onetask._id === pred.id)[0], pred.type];
+				})
+				return preds.map((task) => {
+					return <PredItem removePredecessor={this.removePredecessor} key={task[0]._id} task={task[0]} type={task[1]} /> 
+				})
 		}
 	}
 
@@ -244,32 +246,44 @@ export class TaskEdit extends React.Component {
 	render() {
 		return(
 			<div className="task__add">
-				<h1>TASK EDIT</h1>
-				<div className="task__add-item">Title: <input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
-				<div className="task__add-item">Type: <input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
-				<div className="task__add-item">Starting pK: <input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
-				<div className="task__add-item">Ending pK: <input onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
-				<div className="task__add-item">Length: <input disabled value={this.state.length} placeholder="Length" type="text"/></div>
-				<DateRangePicker
-				  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
-				  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
-				  onDatesChange={this.onDatesChange} // PropTypes.func.isRequired,
-				  focusedInput={this.state.calendarFocused} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
-				  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
-				  isOutsideRange={() => false}
-				/>
-				<div className="task__add-item">Duration: <input disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
-				<div className="task__add-item">Quantity: <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Duration" type="text"/></div>
-				<div className="task__add-item">Quantity Unit: <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
-				<div className="task__add-item">Rate: <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
-				<div className="task__add-item"><h2>Inverted:</h2> <input type="checkbox" checked={this.state.inverted} onChange={this.handleInvertedChange} /></div>
-	      <CompactPicker
-	        color={ this.state.color }
-	        onChangeComplete={ this.handleChangeColor }
-	      />
-				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.props.task ? this.renderPossiblePreds(): undefined }</div></div>
+				<h1 className='task__add-main-title'>ADD A TASK</h1>
+				<div className="task__add-item"><div className='add--task-title'>Title:</div> <input className='task__add-input' onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Type:</div> <input className='task__add-input' onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Starting pK:</div> <input className='task__add-input' onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Ending pK:</div> <input className='task__add-input' onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Length:</div> <input className='task__add-input' disabled value={this.state.length} placeholder="Length" type="text"/></div>
+				<div className="divDateRangePicker">
+					<span>Starting Date</span>
+					<DateRangePicker
+					  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
+					  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
+					  onDatesChange={this.onDatesChange} // PropTypes.func.isRequired,
+					  focusedInput={this.state.calendarFocused} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
+					  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
+					  isOutsideRange={() => false}
+					/>
+					<span>Finishing Date</span>
+				</div>
+				<div className="task__add-item"><div className='add--task-title'>Duration:</div> <input className='task__add-input' disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Quantity:</div> <input className='task__add-input' onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Quantity Unit:</div> <input className='task__add-input' onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Rate:</div> <input className='task__add-input' onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Inverted:</div> <input className='task__add-input' type="checkbox" onChange={this.handleInvertedChange} /></div>
+	     	<div className="task__colorpicker">
+		     	<CompactPicker
+		        color={ this.state.color }
+		        onChangeComplete={ this.handleChangeColor }
+		      />
+	     	</div>
+				<div className="task__poss-preds">
+					<h3 className="task__poss-preds__title">Possible Predecessors</h3>
+					<div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div>
+				</div>
 
-				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.props.task.predecessors ? this.renderPreds(): undefined }</div></div>
+				<div className="task__poss-preds">
+					<h3 className="task__poss-preds__title">Predecessors</h3>
+					<div className="task__add-preds"> { this.renderPreds() }</div>
+				</div>
 
 				<button className='admin__button' onClick={this.onSubmit}>Edit Task</button>
 			</div>

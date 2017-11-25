@@ -1,5 +1,5 @@
 import React from 'react';
-import {Raphael,Paper,Set,Circle,Ellipse,Image,Rect,Text,Path,Line} from 'react-raphael';
+import {Raphael, Utils, Element, Paper,Set,Circle,Ellipse,Image,Rect,Text,Path,Line} from 'react-raphael';
 
 import TaskDetail from './TaskDetail';
 
@@ -33,6 +33,7 @@ export default class PlanCdf extends React.Component {
 	}
 
 	onmouseover(raphael_context, task){
+		console.log(this["ref" + task._id]);
 		this.setState(() => ({taskDetail : task}));
 		raphael_context.attr({'stroke-width':'5'});
 	}
@@ -57,13 +58,13 @@ export default class PlanCdf extends React.Component {
 				"stroke": task.color,
 				"stroke-width" : "3"
 			}
-			return <Path mouseover={function() { return self.onmouseover(this, task) }} mouseout={function() { return self.onmouseout(this) }} key={task._id} d={coords} attr={attr} />
+			return <Path ref={(el) => { this["ref" + task._id] = el}} mouseover={function() { return self.onmouseover(this, task) }} mouseout={function() { return self.onmouseout(this) }} key={task._id} d={coords} attr={attr} />
 		})
 	}
 
 	render() {
 		return(
-			<div>
+			<div className="plancdf">
 				<Paper className={"paper"} width={this.state.paperWidth} height={this.state.paperHeight}>
 					{ this.drawScale() }
 					<Set>

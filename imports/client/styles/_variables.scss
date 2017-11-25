@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+@mixin fontFamily{
+	font-family: 'Open Sans', sans-serif;
+}
+
+$space: 1.3rem;
+
+//FONT-SIZES
+
+$small-font-size: 1.1rem;
+$base-font-size: 1.3rem;
+$medium-font-size: 1.5rem;
+$large-font-size: 1.8rem;
+
+//COLORS
+
+$light-bg: #F3F3F4;
+$dark-bg: #2F4050;
+$font-color: #5D5F60;
+$border-color: #E7EAEC;
+
+$cta1-color: #D1DADE;
+$cta2-color: #1AB394;
+$cta3-color: #F8AC59;

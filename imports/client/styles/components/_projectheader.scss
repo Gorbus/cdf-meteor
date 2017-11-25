@@ -1,0 +1,74 @@
+.project-header {
+	background: $light-bg;
+	border-bottom: 1px solid $border-color;
+	width: 100%;
+	box-sizing: border-box;
+	@include flexbox;
+	@include justify-content(space-between);
+}
+
+.project-header-content {
+	height: 7rem;
+	@include flexbox;
+	@include align-items(center);
+	margin-left: $space;
+}
+
+.project-header__back {
+	font-weight: 700;
+	font-size: $medium-font-size;
+	background: $cta1-color;
+	padding: 0 $space * 2 0 $space * 2 ;
+	height: 5rem;
+	line-height: 5rem;
+	border-radius: 5px;
+}
+
+.project-header__project-infos {
+	@include flexbox;
+	margin-left: 5 * $space;
+	@include align-items(center);
+}
+
+.project-header__project-title, .project-header__project-pks, .project-header__project-dates {
+	@include flexbox;
+	@include flex-direction(column);
+	@include justify-content(center);
+	@include align-items(center);
+	background: $cta1-color;
+	font-weight: 700;
+	font-size: $medium-font-size;
+	padding: 0 $space * 2 0 $space * 2 ;
+	height: 5rem;
+	border-radius: 5px;
+	margin-left: $space;
+}
+
+
+.project-header__project-pks, .project-header__project-dates {
+	font-size: $base-font-size;
+}
+
+.project-header__project-title {
+	background: $cta2-color;
+	color: white;
+}
+
+.project-header__toolbox {
+	@include flexbox;
+	@include align-items(center);
+}
+
+.project-header__add-task {
+	background: $cta3-color;
+	font-weight: 700;
+	font-size: $medium-font-size;
+	padding: 0 $space * 2 0 $space * 2 ;
+	color: white;
+	height: 5rem;
+	line-height: 5rem;
+	border-radius: 5px;
+	margin-left: $space;
+	margin-right: $space;
+	cursor: pointer;
+}

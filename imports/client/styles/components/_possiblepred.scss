@@ -1,0 +1,47 @@
+.poss-pred {
+	@include flexbox;
+	@include justify-content(space-between);
+	margin-top: .3rem;
+	color: white;
+	font-size: $small-font-size;
+}
+
+.poss-pred__button {
+	background: $cta3-color;
+	border-radius: 2px;
+	cursor: pointer;
+	text-align: center;
+}
+
+.poss-pred__button:hover {
+	background: $cta1-color;
+}
+
+.poss-pred__data__color {
+	height: 1rem;
+	@include align-self(center);
+}
+
+.poss-pred__data__title {
+	width: 18%;
+}
+
+.poss-pred__data__type {
+	width: 14%;
+}
+
+.poss-pred__data__dep_date_start, .poss-pred__data__dep_date_end {
+	width: 10%;
+}
+
+.poss-pred__data__pk_start, .poss-pred__data__pk_end, .poss-pred__button,  {
+	width: 6%;
+}
+
+.poss-pred__data__color, .poss-pred__data__inverted, .poss-pred__data__pred-type {
+	width: 4%;
+}
+
+.poss-pred__button {
+	width: 8%;
+}

@@ -10,6 +10,10 @@ import 'react-dates/lib/css/_datepicker.css';
 
 import { DateRangePicker } from 'react-dates';
 
+import PossiblePreds from './PossiblePreds';
+import PredItem from './PredItem';
+
+
 export class TaskAdd extends React.Component {
 	constructor(props){
 		super(props);
@@ -50,6 +54,7 @@ export class TaskAdd extends React.Component {
 		this.updateDependenciesWhenRemovingPred = this.updateDependenciesWhenRemovingPred.bind(this);
 		this.renderPreds = this.renderPreds.bind(this);
 		this.handleChangeColor = this.handleChangeColor.bind(this);
+		this.removePredecessor = this.removePredecessor.bind(this);
 	}
 
 	componentWillReceiveProps(){
@@ -154,7 +159,9 @@ export class TaskAdd extends React.Component {
 					color: "black",
 					predecessors: [],
 					dependencies: []
-				})
+				}, () => {
+					Session.set('isAddTaskOpen', false)}
+				)
 			});
 	}
 
@@ -217,6 +224,7 @@ export class TaskAdd extends React.Component {
 	}
 
 	removePredecessor(taskId){
+		console.log(this.state);
 		let predecessors = this.state.predecessors.filter((pred) => {
 			if (pred.id === taskId) {
 				return false;
@@ -231,16 +239,16 @@ export class TaskAdd extends React.Component {
 
 	renderPossiblePreds() {
 		return this.state.possiblePredecessors.map((task) => {
-			return <div key={task._id}>{task.title} <div onClick={() => this.addPredecessor(task._id, 'asap')}>ASAP</div><div onClick={() => this.addPredecessor(task._id, 'after')}>AFTER</div></div> 			
+			return <PossiblePreds key={task._id} task={task} addPredecessor={this.addPredecessor} />		
 		});
 	}
 
 	renderPreds() {
 		let preds = this.state.predecessors.map((pred) => {
-			return this.props.tasks.filter((onetask) => onetask._id === pred.id)[0];
+			return [this.props.tasks.filter((onetask) => onetask._id === pred.id)[0], pred.type];
 		})
 		return preds.map((task) => {
-			return <div onClick={() => this.removePredecessor(task._id)} key={task._id}>{task.title}</div> 
+			return <PredItem removePredecessor={this.removePredecessor} key={task[0]._id} task={task[0]} type={task[1]} /> 
 		})
 	}
 
@@ -254,34 +262,47 @@ export class TaskAdd extends React.Component {
 	render() {
 		return(
 			<div className="task__add">
-				<h1>ADD A TASK TO PROJECT</h1>
-				<div className="task__add-item"><h2>Title:</h2> <input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
-				<div className="task__add-item"><h2>Type:</h2> <input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
-				<div className="task__add-item"><h2>Starting pK:</h2> <input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
-				<div className="task__add-item"><h2>Ending pK:</h2> <input onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
-				<div className="task__add-item"><h2>Length:</h2> <input disabled value={this.state.length} placeholder="Length" type="text"/></div>
-				<DateRangePicker
-				  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
-				  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
-				  onDatesChange={this.onDatesChange} // PropTypes.func.isRequired,
-				  focusedInput={this.state.calendarFocused} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
-				  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
-				  isOutsideRange={() => false}
-				/>
-				<div className="task__add-item"><h2>Duration:</h2> <input disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
-				<div className="task__add-item"><h2>Quantity:</h2> <input onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
-				<div className="task__add-item"><h2>Quantity Unit:</h2> <input onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
-				<div className="task__add-item"><h2>Rate:</h2> <input onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
-				<div className="task__add-item"><h2>Inverted:</h2> <input type="checkbox" onChange={this.handleInvertedChange} /></div>
-	      <CompactPicker
-	        color={ this.state.color }
-	        onChangeComplete={ this.handleChangeColor }
-	      />
-				<div className="task__add-item"><h3>Possible Predecessors</h3><div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div></div>
+				<h1 className='task__add-main-title'>ADD A TASK</h1>
+				<div className="task__add-item"><div className='add--task-title'>Title:</div> <input className='task__add-input' onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Type:</div> <input className='task__add-input' onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Starting pK:</div> <input className='task__add-input' onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Ending pK:</div> <input className='task__add-input' onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Length:</div> <input className='task__add-input' disabled value={this.state.length} placeholder="Length" type="text"/></div>
+				<div className="divDateRangePicker">
+					<span>Starting Date</span>
+					<DateRangePicker
+					  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
+					  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
+					  onDatesChange={this.onDatesChange} // PropTypes.func.isRequired,
+					  focusedInput={this.state.calendarFocused} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
+					  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
+					  isOutsideRange={() => false}
+					/>
+					<span>Finishing Date</span>
+				</div>
+				<div className="task__add-item"><div className='add--task-title'>Duration:</div> <input className='task__add-input' disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Quantity:</div> <input className='task__add-input' onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Quantity Unit:</div> <input className='task__add-input' onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Rate:</div> <input className='task__add-input' onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Inverted:</div> <input className='task__add-input' type="checkbox" onChange={this.handleInvertedChange} /></div>
+	     	<div className="task__colorpicker">
+		     	<CompactPicker
+		        color={ this.state.color }
+		        onChangeComplete={ this.handleChangeColor }
+		      />
+	     	</div>
+				<div className="task__poss-preds">
+					<h3 className="task__poss-preds__title">Possible Predecessors</h3>
+					<div className="task__add-possiblePreds">{ this.renderPossiblePreds() }</div>
+				</div>
 
-				<div className="task__add-item"><h3>Predecessors</h3><div className="task__add-preds"> { this.renderPreds() }</div></div>
+				<div className="task__poss-preds">
+					<h3 className="task__poss-preds__title">Predecessors</h3>
+					<div className="task__add-preds"> { this.renderPreds() }</div>
+				</div>
 
 				<button className='admin__button' onClick={this.onSubmit}>Add a Task</button>
+				<button className='admin__button' onClick={() => Session.set('isAddTaskOpen', false)}>Close</button>
 			</div>
 			)
 	}

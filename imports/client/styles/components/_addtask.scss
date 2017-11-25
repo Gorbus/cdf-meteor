@@ -1,0 +1,56 @@
+.task__add {
+	position: absolute;
+	top: 7.5rem;
+	right: .5rem;
+	width: 60rem;
+	padding: $space;
+	border-radius: 5px;
+	background: $dark-bg;
+}
+
+.task__add-main-title{
+	color: white;
+	margin-top: 0;
+	@include align-self(center);
+	font-weight: 700;
+	font-size: $large-font-size;
+	text-align: center;
+}
+
+.task__add-item {
+	@include flexbox;
+	@include justify-content(space-between);
+	@include align-items(center);
+	color: white;
+	font-weight: 700;
+	margin-top: .5rem;
+	min-height: 3rem;
+}
+
+.task__add-input {
+	width: 48rem;
+}
+
+.divDateRangePicker{
+	margin-top: .5rem;
+	color: white;
+	@include flexbox;
+	@include justify-content(space-around);
+	@include align-items(center);
+}
+
+.task__colorpicker{
+	@include align-self(center);
+	@include flexbox;
+	@include justify-content(center);
+}
+
+.task__poss-preds__title {
+	color: white;
+	text-align: center;
+}
+
+.task__poss-preds {
+	border-top: 1px solid $font-color;
+	margin-top: .7rem;
+}

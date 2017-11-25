@@ -2,9 +2,9 @@ import React from 'react';
 import { Accounts } from 'meteor/accounts-base';
 import { createContainer } from 'meteor/react-meteor-data';
 
-export const Header = (props) => {
+export const SideBar = (props) => {
 	return (
-		<div className='header'>
+		<div className='sidebar'>
 			<h3>Header</h3>
 			{ }
 			<button className="button button--link-text" onClick={() => Accounts.logout() }>Logout</button>
@@ -19,4 +19,4 @@ export default createContainer(() => {
     const loading = !Meteor.user();
     const user = Meteor.user();
     return { loading, user };
-}, Header);
+}, SideBar);

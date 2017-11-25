@@ -1,12 +1,15 @@
 import React from 'react';
 import { createContainer } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
+import { Session } from 'meteor/session';
 
 import { Projects } from './../../api/projects';
 import { Tasks } from './../../api/tasks';
 
 import TaskAdd from './../task/TaskAdd';
-import TaskItem from './../task/TaskItem'; 
+import TaskItem from './../task/TaskItem';
+
+import ProjectHeader from './ProjectHeader'; 
 
 import PlanCdf from './../plan/PlanCdf';
 
@@ -16,7 +19,6 @@ export class Project extends React.Component {
 		this.state = {
 			tasksOrder : []
 		}
-		this.renderProject = this.renderProject.bind(this);
 		this.renderTasks = this.renderTasks.bind(this);
 		this.updateAllDependencies = this.updateAllDependencies.bind(this);
 		this.updateAllPredsAfterRemovingATask = this.updateAllPredsAfterRemovingATask.bind(this);
@@ -203,7 +205,7 @@ export class Project extends React.Component {
 		for (let i = 0; i < this.props.tasks.length; i++){
 			let task = this.props.tasks[i];
 			if (task.predecessors.length > 0){
-				let newPreds = task.predecessors.filter((predId) => predId != taskId)
+				let newPreds = task.predecessors.filter((predId) => predId.id != taskId)
 				this.props.call('tasks.update', task._id, { predecessors : newPreds})
 			}
 		}
@@ -250,45 +252,44 @@ export class Project extends React.Component {
 		})
 	}
 
-
-
-	renderProject() {
-		console.log(this.props.tasks);
-		return (
-				<div className="project">
-					<PlanCdf tasks={this.props.tasks} project={this.props.project} />
-					{this.props.project.title}
-					<div className="task">
-						<div className="task__data">Title</div>
-						<div className="task__data">Type</div>	
-						<div className="task__data">Starting pK</div>	
-						<div className="task__data">Ending pK</div>	
-						<div className="task__data">Length</div>	
-						<div className="task__data">Starting Date</div>	
-						<div className="task__data">Ending Date</div>
-						<div className="task__data">DEP Starting Date</div>	
-						<div className="task__data">DEP Ending Date</div>
-						<div className="task__data">Duration</div>	
-						<div className="task__data">Quantity</div>	
-						<div className="task__data">Quantity Unit</div>	
-						<div className="task__data">Rate</div>
-						<div className="task__data">Inverted</div>
-						<div className="task__data">Color</div>
-						<div className="task__data">Edit</div>
-						<div className="task__data">Delete</div>
-				</div>
-					{this.props.tasks.length > 0 ? this.renderTasks() : <p>No task for this project</p>}
-					<TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} />
+	render(){
+		if(this.props.loaded){
+			return (
+				<div className='project'>
+					<ProjectHeader project={this.props.project} />
+					<div className="project-content">
+						<PlanCdf tasks={this.props.tasks} project={this.props.project} />
+						{this.props.isAddTaskOpen ? <TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} /> : undefined}
+						<div className='project__tasks-list'>
+							<div className="task__title">
+								<div className="task__data task__data__title data__title">Title</div>
+								<div className="task__data task__data__title data__type">Type</div>	
+								<div className="task__data task__data__title data__pk_start">Starting pK</div>	
+								<div className="task__data task__data__title data__pk_end">Ending pK</div>	
+								<div className="task__data task__data__title data__length">Length</div>	
+								<div className="task__data task__data__title data__date_start">Starting Date</div>	
+								<div className="task__data task__data__title data__date_end">Ending Date</div>
+								<div className="task__data task__data__title data__dep_date_start">DEP Starting Date</div>	
+								<div className="task__data task__data__title data__dep_date_end">DEP Ending Date</div>
+								<div className="task__data task__data__title data__duration">Duration</div>	
+								<div className="task__data task__data__title data__quantity">Quantity</div>	
+								<div className="task__data task__data__title data__quantity_unit">Quantity Unit</div>	
+								<div className="task__data task__data__title data__rate">Rate</div>
+								<div className="task__data task__data__title data__inverted">Inverted</div>
+								<div className="task__data task__data__title task__data__title data__color">Color</div>
+								<div className="task__data task__data__title data__edit">Edit</div>
+								<div className="task__data task__data__title data__delete">Delete</div>
+							</div>
+							{this.props.tasks.length > 0 ? this.renderTasks() : <p>No task for this project</p>}
+						</div>
+					</div>
 				</div>
 			)
-	}
-
-	render(){
-		return (
-			<div>
-				{this.props.loaded ? this.renderProject() : <div className="loading">Loading...</div>}
-			</div>
-		)
+		} else {
+			return (
+				<div className="loading">Loading...</div>
+			)
+		}
 	}
 
 }
@@ -303,6 +304,7 @@ export default createContainer((props) => {
 		loaded: subProject.ready() && subTasks.ready(),
 		project: Projects.findOne(props.match.params.id),
 		tasks: Tasks.find({}).fetch(),
-		call: Meteor.call
+		call: Meteor.call,
+		isAddTaskOpen : Session.get('isAddTaskOpen')
 	}	
 }, Project)

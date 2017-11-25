@@ -1,0 +1,94 @@
+.task {
+	@include flexbox;
+	@include align-items(center);
+}
+
+.task__title {
+	border-bottom: 1px solid lighten($font-color, 15%);
+	border-top: 1px solid lighten($font-color, 15%);
+	@include flexbox;
+	@include align-items(center);
+}
+.task, .task__title {
+	margin-left: $space;
+	margin-right: $space;
+	border-left: 1px solid lighten($font-color, 15%);
+	border-right: 1px solid lighten($font-color, 15%);
+}
+
+.data__edit, .data__delete {
+	border: 0;
+	background: transparent;
+	padding: 0;
+	margin: 0;
+	font-size: $small-font-size;
+}
+
+.task__data {
+	border-box: box-sizing;
+	font-size: $small-font-size;
+	text-align: center;
+}
+
+.task:nth-child(odd){
+	.task__data:nth-child(odd){
+		background: $light-bg;
+	}
+
+	.task__data:nth-child(even){
+		background: $cta1-color;;
+	}
+}
+
+
+.task:nth-child(even){
+	.task__data:nth-child(odd){
+		background: darken($light-bg, 10%);
+	}
+
+	.task__data:nth-child(even){
+		background: darken($cta1-color, 10%);
+	}
+}
+
+.task:nth-last-child(1){
+	border-bottom: 1px solid lighten($font-color, 15%);
+}
+
+.task__data__title {
+	@include flexbox;
+	@include flex-direction (column);
+	@include justify-content(center);
+	font-weight: 700;
+	text-transform: uppercase;
+	height: 3rem;
+	box-sizing: border-box;
+}
+
+
+.task__data__title:nth-child(odd){
+	background: darken($light-bg, 20%);
+}
+
+.task__data__title:nth-child(even){
+	background: darken($cta1-color, 20%);
+}
+
+
+
+.data__title, {
+	width: 10%;
+}
+
+ .data__type {
+ 	width: 7.5%;
+ }
+
+.data__duration, .data__rate, .data__quantity, .data__quantity_unit, .data__length, .data__inverted {
+	width: 4%;
+}
+
+
+.data__pk_start, .data__pk_end, .data__date_start, .data__date_end, .data__dep_date_start, .data__dep_date_end, .data__edit, .data__delete, .data__color {
+	width: 6.5%;
+}

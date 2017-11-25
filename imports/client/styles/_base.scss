@@ -1,0 +1,44 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+
+html {
+	font-size: 62.5%;
+	background: white;
+}
+
+body {
+	@include fontFamily;
+	font-size: $base-font-size;
+	color: $font-color;
+}
+
+h1 {
+	font-weight: 300;
+	margin-top: $space;
+}
+
+h2 {
+	margin-top: $space;
+}
+
+p {
+	margin-bottom: $space;
+}
+
+a {
+	text-decoration: none;
+	color: $font-color;
+}
+
+.container {
+	max-width: 102.4rem;
+	margin: 0 auto;
+}
+
+input[type=text], input[type=email], input[type=password] {
+	border: 1px solid grey;
+	font-size: $base-font-size;
+	padding: $space / 2;
+}

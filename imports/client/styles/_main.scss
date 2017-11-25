@@ -1,3 +1,15 @@
+@import './mixins';
 @import './variables';
-@import './temp';
+@import './base';
+
+@import './components/addtask';
+@import './components/wholesite';
 @import './components/paper';
+@import './components/project';
+@import './components/projectheader';
+@import './components/sidebar';
+@import './components/task';
+@import './components/possiblepred';
+
+
+

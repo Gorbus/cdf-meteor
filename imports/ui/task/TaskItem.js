@@ -34,23 +34,23 @@ export default class TaskItem extends React.Component{
 	render() {
 		return(
 				<div className="task">
-					<div className="task__data">{this.props.task.title}</div>
-					<div className="task__data">{this.props.task.type}</div>	
-					<div className="task__data">{this.props.task.pk_start}</div>	
-					<div className="task__data">{this.props.task.pk_end}</div>	
-					<div className="task__data">{this.props.task.length}</div>	
-					<div className="task__data">{moment(this.props.task.date_start).format('DD/MM/YYYY')}</div>	
-					<div className="task__data">{moment(this.props.task.date_end).format('DD/MM/YYYY')}</div>	
-					<div className="task__data">{moment(this.props.task.dep_date_start).format('DD/MM/YYYY')}</div>	
-					<div className="task__data">{moment(this.props.task.dep_date_end).format('DD/MM/YYYY')}</div>	
-					<div className="task__data">{this.props.task.duration / 1000 / 60 / 60 / 24}</div>	
-					<div className="task__data">{this.props.task.quantity}</div>	
-					<div className="task__data">{this.props.task.quantity_unit}</div>	
-					<div className="task__data">{this.props.task.rate}</div>
-					<div className="task__data">{this.props.task.inverted.toString()}</div>
-					<div className="task__data">{this.props.task.color}</div>
-					<button onClick={() => this.setState(() => ({editMode: true}))}>Edit Task</button>
-					{ this.state.deleteMode ? <div><button onClick={this.confirmDelete.bind(this)}>Confirm Delete</button><button onClick={this.changeDeleteMode}>Cancel Delete</button></div> : <button onClick={this.changeDeleteMode.bind(this)}>Delete Task</button>}
+					<div className="task__data data__title">{this.props.task.title}</div>
+					<div className="task__data data__type">{this.props.task.type}</div>	
+					<div className="task__data data__pk_start">{this.props.task.pk_start}</div>	
+					<div className="task__data data__pk_end">{this.props.task.pk_end}</div>	
+					<div className="task__data data__length">{this.props.task.length}</div>	
+					<div className="task__data data__date_start">{moment(this.props.task.date_start).format('DD/MM/YYYY')}</div>	
+					<div className="task__data data__date_end">{moment(this.props.task.date_end).format('DD/MM/YYYY')}</div>	
+					<div className="task__data data__dep_date_start">{moment(this.props.task.dep_date_start).format('DD/MM/YYYY')}</div>	
+					<div className="task__data data__dep_date_end">{moment(this.props.task.dep_date_end).format('DD/MM/YYYY')}</div>	
+					<div className="task__data data__duration">{this.props.task.duration / 1000 / 60 / 60 / 24}</div>	
+					<div className="task__data data__quantity">{this.props.task.quantity}</div>	
+					<div className="task__data data__quantity_unit">{this.props.task.quantity_unit}</div>	
+					<div className="task__data data__rate">{this.props.task.rate}</div>
+					<div className="task__data data__inverted">{this.props.task.inverted.toString()}</div>
+					<div className="task__data data__color" style={{backgroundColor: this.props.task.color}}>{this.props.task.color}</div>
+					<div className="task__data data__edit" onClick={() => this.setState(() => ({editMode: true}))}>Edit Task</div>
+					{ this.state.deleteMode ? <div><div onClick={this.confirmDelete.bind(this)}>Confirm Delete</div><div onClick={this.changeDeleteMode}>Cancel Delete</div></div> : <div className="task__data data__delete" onClick={this.changeDeleteMode.bind(this)}>Delete Task</div>}
 					{ this.state.editMode ? <TaskEdit task={this.props.task} tasks={this.props.tasks} changeEditMode={this.changeEditMode} updateAllDependencies={this.props.updateAllDependencies.bind(this)} /> : undefined }
 				</div>
 			)
