@@ -1,6 +1,6 @@
 import React from 'react';
 import { Accounts } from 'meteor/accounts-base';
-import { createContainer } from 'meteor/react-meteor-data';
+import { withTracker } from 'meteor/react-meteor-data';
 
 export const SideBar = (props) => {
 	return (
@@ -15,8 +15,8 @@ export const SideBar = (props) => {
 
 
 
-export default createContainer(() => {
+export default withTracker(() => {
     const loading = !Meteor.user();
     const user = Meteor.user();
     return { loading, user };
-}, SideBar);
+})(SideBar);

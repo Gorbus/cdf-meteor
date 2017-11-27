@@ -1,5 +1,5 @@
 import React from 'react';
-import { createContainer } from 'meteor/react-meteor-data';
+import { withTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Session } from 'meteor/session';
 
@@ -17,7 +17,8 @@ export class Project extends React.Component {
 	constructor(props){
 		super(props)
 		this.state = {
-			tasksOrder : []
+			tasksOrder : [],
+			highlightIds : []
 		}
 		this.renderTasks = this.renderTasks.bind(this);
 		this.updateAllDependencies = this.updateAllDependencies.bind(this);
@@ -26,6 +27,26 @@ export class Project extends React.Component {
 		this.getCalculationOrder = this.getCalculationOrder.bind(this);
 		this.updateDepDates = this.updateDepDates.bind(this);
 		this.updateAfterChange = this.updateAfterChange.bind(this);
+		this.removeRefFromTaskRef = this.removeRefFromTaskRef.bind(this);
+		this.highlight = this.highlight.bind(this);
+		this.lowlight = this.lowlight.bind(this);
+	}
+
+	removeRefFromTaskRef(refId){
+		let tasksRefs = this.state.tasksRefs.filter((ref) => {
+			return ref.taskId != refId
+		})
+		this.setState(() => ({ tasksRefs }));
+	}
+
+	highlight(task){
+		let highlightIds = this.state.highlightIds;
+		highlightIds.push(task._id);
+		this.setState(() => ({ highlightIds }));
+	}
+
+	lowlight(){
+		this.setState(() => ({ highlightIds : [] }));
 	}
 
 	updateAfterChange() {
@@ -33,7 +54,6 @@ export class Project extends React.Component {
 	}
 
 	updateDepDates(){
-		console.log(this.state.tasksOrder);
 		let tasks = this.props.tasks;
 		tasksToUpdate = []
 
@@ -46,8 +66,6 @@ export class Project extends React.Component {
 				task.dep_duration = task.duration;
 				tasksToUpdate.push(task);
 			} else {
-				console.log('ici ?');
-				console.log(task.title);
 				let new_dep_date_start = task.date_start;
 				let new_dep_date_end = task.date_end;
 				let new_dep_duration = task.duration;
@@ -58,11 +76,9 @@ export class Project extends React.Component {
 					let delay = task.predecessors[j].delay;
 					let type = task.predecessors[j].type
 					if (type === 'after') {
-						console.log('after');
 						if (pred.dep_date_end && (pred.dep_date_end > new_dep_date_start)){
 							new_dep_date_start = pred.dep_date_end + delay;
 							new_dep_date_end = new_dep_date_start + new_dep_duration;
-							console.log(new_dep_date_start, new_dep_date_end)
 						}
 					} else if(type === 'asap') {
 						if (!((task.pk_end < pred.pk_start) || (task.pk_start > pred.pk_end))) {
@@ -248,7 +264,7 @@ export class Project extends React.Component {
 
 	renderTasks() {
 		return this.props.tasks.map((task) => {
-			return <TaskItem key={task._id} task={task} tasks={this.props.tasks} updateAllDependencies={this.updateAllDependencies} updateAllPredsAfterRemovingATask={this.updateAllPredsAfterRemovingATask} />
+			return <TaskItem key={task._id} task={task} tasks={this.props.tasks} highlight={this.highlight} lowlight={this.lowlight} updateAllDependencies={this.updateAllDependencies} updateAllPredsAfterRemovingATask={this.updateAllPredsAfterRemovingATask} />
 		})
 	}
 
@@ -258,7 +274,7 @@ export class Project extends React.Component {
 				<div className='project'>
 					<ProjectHeader project={this.props.project} />
 					<div className="project-content">
-						<PlanCdf tasks={this.props.tasks} project={this.props.project} />
+						<PlanCdf tasks={this.props.tasks} project={this.props.project} removeRefFromTaskRef={this.removeRefFromTaskRef} highlight={this.highlight} lowlight={this.lowlight} highlightIds={this.state.highlightIds} />
 						{this.props.isAddTaskOpen ? <TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} /> : undefined}
 						<div className='project__tasks-list'>
 							<div className="task__title">
@@ -296,7 +312,7 @@ export class Project extends React.Component {
 
 
 
-export default createContainer((props) => {
+export default withTracker((props) => {
 	const subProject = Meteor.subscribe('project', props.match.params.id);
 	const subTasks = Meteor.subscribe('project_tasks', props.match.params.id)
 
@@ -307,4 +323,4 @@ export default createContainer((props) => {
 		call: Meteor.call,
 		isAddTaskOpen : Session.get('isAddTaskOpen')
 	}	
-}, Project)
+})(Project)

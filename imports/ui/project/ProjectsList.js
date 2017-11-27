@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
-import { createContainer } from 'meteor/react-meteor-data';
+import { withTracker } from 'meteor/react-meteor-data';
 
 import { Projects } from './../../api/projects';
 
@@ -26,7 +26,7 @@ export const ProjectsList = (props) => {
 	)
 }
 
-export default createContainer(({}) => {
+export default withTracker(({}) => {
 	Meteor.subscribe('my-projects');
 
 	return {
@@ -36,4 +36,4 @@ export default createContainer(({}) => {
 			},
 		}).fetch(),
 	}	
-}, ProjectsList)
+})(ProjectsList)

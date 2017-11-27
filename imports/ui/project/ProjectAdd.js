@@ -1,6 +1,6 @@
 import "react-dates/initialize";
 import React from 'react';
-import { createContainer } from 'meteor/react-meteor-data';
+import { withTracker } from 'meteor/react-meteor-data';
 import PropTypes from 'prop-types';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
@@ -122,8 +122,8 @@ ProjectAdd.PropTypes = {
 	call: PropTypes.func.isRequired
 };
 
-export default createContainer(() => {
+export default withTracker(() => {
 	return {
 		call: Meteor.call
 	}
-}, ProjectAdd)
+})(ProjectAdd)

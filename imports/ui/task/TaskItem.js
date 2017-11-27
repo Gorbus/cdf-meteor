@@ -33,7 +33,7 @@ export default class TaskItem extends React.Component{
 
 	render() {
 		return(
-				<div className="task">
+				<div className="task" onMouseOver={() => this.props.highlight(this.props.task)} onMouseOut={this.props.lowlight}>
 					<div className="task__data data__title">{this.props.task.title}</div>
 					<div className="task__data data__type">{this.props.task.type}</div>	
 					<div className="task__data data__pk_start">{this.props.task.pk_start}</div>	
