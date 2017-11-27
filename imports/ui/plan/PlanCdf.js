@@ -59,7 +59,7 @@ export default class PlanCdf extends React.Component {
 				let echX_draw = 'M' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMarginY * 3 / 4) + 'L' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMarginY * 5 / 4);
 				fullScaleX.push(<Path key={`scaleX${j}draw`} d={echX_draw} attr={{"stroke" : "#565656"}} />);
 				let echX_line = 'M' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMarginY) + 'L' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + '0';
-				fullScaleX.push(<Path key={`scaleX${j}line`} d={echX_line} attr={{"stroke" : "#555555", "stroke-dasharray" : "."}} />);
+				fullScaleX.push(<Path key={`scaleX${j}line`} d={echX_line} attr={{"stroke" : "#ADADAD", "stroke-dasharray" : "."}} />);
 				fullScaleX.push(<Text x={(this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth)} y={(this.state.paperHeight - this.state.paperMarginY / 4)} key={`scaleX${j}text`} text={echX + 'm'} attr={{"stroke" : "#565656"}} />);
 			}
 		}
@@ -82,7 +82,7 @@ export default class PlanCdf extends React.Component {
 				let echY_draw = 'M' + (this.state.paperMarginX * 9 / 10) + ',' + yCoord + 'L' + (this.state.paperMarginX * 11 / 10) + ',' + yCoord;
 				fullScaleY.push(<Path key={`scaleY${k}draw`} d={echY_draw} attr={{"stroke" : "#565656"}}/>)
 				let echY_line = 'M' + this.state.paperMarginX + ',' + yCoord + 'L' + this.state.paperWidth + ',' + yCoord;
-				fullScaleY.push(<Path key={`scaleY${k}line`} d={echY_line} attr={{"stroke" : "#555555", "stroke-dasharray" : "-"}}/>)
+				fullScaleY.push(<Path key={`scaleY${k}line`} d={echY_line} attr={{"stroke" : "#ADADAD", "stroke-dasharray" : "--."}}/>)
 				fullScaleY.push(<Text x={2} y={yCoord} key={`scaleX${k}text`} text={moment(echY * 24 * 60 * 60 * 1000 + this.props.project.date_start).format('DD/MM/YYYY')} attr={{"stroke" : "#565656", "text-anchor":"start"}} />);
 			}
 		}

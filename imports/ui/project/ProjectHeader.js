@@ -9,11 +9,6 @@ export default class ProjectHeader extends React.Component {
 
 	}
 
-	openAddTaskForm() {
-		let isAddTaskOpen = !Session.get('isAddTaskOpen')
-		Session.set('isAddTaskOpen', isAddTaskOpen);
-	}
-
 	render() {
 		return (
 			<div className="project-header">
@@ -29,7 +24,7 @@ export default class ProjectHeader extends React.Component {
 					</div>
 				</div>
 				<div className='project-header__toolbox'>
-					<div className='project-header__add-task' onClick={this.openAddTaskForm.bind(this)}>+ Add a task</div>
+					<div className='project-header__add-task' onClick={this.props.triggerAddMode}>+ Add a task</div>
 				</div>
 			</div>
 			)

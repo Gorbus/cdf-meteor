@@ -8,6 +8,8 @@ import { Tasks } from './../../api/tasks';
 
 import TaskAdd from './../task/TaskAdd';
 import TaskItem from './../task/TaskItem';
+import TaskEdit from './../task/TaskEdit';
+
 
 import ProjectHeader from './ProjectHeader'; 
 
@@ -18,7 +20,9 @@ export class Project extends React.Component {
 		super(props)
 		this.state = {
 			tasksOrder : [],
-			highlightIds : []
+			highlightIds : [],
+			addTaskOpen : false,
+			editTaskOpen: null
 		}
 		this.renderTasks = this.renderTasks.bind(this);
 		this.updateAllDependencies = this.updateAllDependencies.bind(this);
@@ -30,6 +34,23 @@ export class Project extends React.Component {
 		this.removeRefFromTaskRef = this.removeRefFromTaskRef.bind(this);
 		this.highlight = this.highlight.bind(this);
 		this.lowlight = this.lowlight.bind(this);
+		this.triggerEditMode = this.triggerEditMode.bind(this);
+		this.triggerAddMode = this.triggerAddMode.bind(this);
+	}
+
+	triggerEditMode(task){
+		this.setState(() => ({
+			addTaskOpen : false,
+			editTaskOpen : task
+		}))
+	}
+
+	triggerAddMode(){
+		let addTaskOpen = !this.state.addTaskOpen;
+		this.setState(() => ({
+			addTaskOpen,
+			editTaskOpen : null
+		}))
 	}
 
 	removeRefFromTaskRef(refId){
@@ -264,18 +285,21 @@ export class Project extends React.Component {
 
 	renderTasks() {
 		return this.props.tasks.map((task) => {
-			return <TaskItem key={task._id} task={task} tasks={this.props.tasks} highlight={this.highlight} lowlight={this.lowlight} updateAllDependencies={this.updateAllDependencies} updateAllPredsAfterRemovingATask={this.updateAllPredsAfterRemovingATask} />
+			let bold;
+			this.state.highlightIds.indexOf(task._id) > -1 ? bold = true : bold = false;
+			return <TaskItem key={task._id} bold={bold} task={task} tasks={this.props.tasks} highlight={this.highlight} lowlight={this.lowlight} triggerEditMode={this.triggerEditMode} updateAllPredsAfterRemovingATask={this.updateAllPredsAfterRemovingATask} />
 		})
 	}
 
 	render(){
+		console.log(this.props.tasks);
 		if(this.props.loaded){
 			return (
 				<div className='project'>
-					<ProjectHeader project={this.props.project} />
+					<ProjectHeader project={this.props.project} triggerAddMode={this.triggerAddMode} />
 					<div className="project-content">
 						<PlanCdf tasks={this.props.tasks} project={this.props.project} removeRefFromTaskRef={this.removeRefFromTaskRef} highlight={this.highlight} lowlight={this.lowlight} highlightIds={this.state.highlightIds} />
-						{this.props.isAddTaskOpen ? <TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} /> : undefined}
+						{this.state.addTaskOpen ? <TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} triggerAddMode={this.triggerAddMode} /> : undefined}
 						<div className='project__tasks-list'>
 							<div className="task__title">
 								<div className="task__data task__data__title data__title">Title</div>
@@ -297,6 +321,7 @@ export class Project extends React.Component {
 								<div className="task__data task__data__title data__delete">Delete</div>
 							</div>
 							{this.props.tasks.length > 0 ? this.renderTasks() : <p>No task for this project</p>}
+							{ this.state.editTaskOpen ? <TaskEdit task={this.state.editTaskOpen} closeEditMode={() => this.setState(() => ({editTaskOpen : null}))} tasks={this.props.tasks} updateAllDependencies={this.updateAllDependencies} /> : undefined }
 						</div>
 					</div>
 				</div>
@@ -321,6 +346,5 @@ export default withTracker((props) => {
 		project: Projects.findOne(props.match.params.id),
 		tasks: Tasks.find({}).fetch(),
 		call: Meteor.call,
-		isAddTaskOpen : Session.get('isAddTaskOpen')
 	}	
 })(Project)

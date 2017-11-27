@@ -14,5 +14,4 @@ Tracker.autorun(() => {
 
 Meteor.startup(() => {
 	ReactDOM.render(<AppRouter />, document.getElementById('app'))
-	Session.set('isAddTaskOpen', false);
 })

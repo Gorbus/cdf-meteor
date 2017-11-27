@@ -12,6 +12,7 @@ import { DateRangePicker } from 'react-dates';
 
 import PossiblePreds from './PossiblePreds';
 import PredItem from './PredItem';
+import Error from './../Error';
 
 
 export class TaskAdd extends React.Component {
@@ -34,7 +35,9 @@ export class TaskAdd extends React.Component {
 			calendarFocused: null,
 			possiblePredecessors: this.props.tasks ? this.props.tasks : [],
 			predecessors: [],
-			dependencies: []
+			dependencies: [],
+			errors: [],
+			transitionOut: null
 		}
 		this.handleTitleChange = this.handleTitleChange.bind(this);
 		this.handleTypeChange = this.handleTypeChange.bind(this);
@@ -74,13 +77,49 @@ export class TaskAdd extends React.Component {
 	handlePkStartChange(e) {
 		const pk_start = e.target.value;
 		const length = e.target.value && this.state.pk_end ? (parseInt(this.state.pk_end) - parseInt(e.target.value)).toString() : '';
-		this.setState(() => ({ pk_start, length }));
+		let errors = this.state.errors;
+		let error1 = 'Starting pK must be smaller than ending pK';
+		if (pk_start => this.state.pk_end){
+			if (errors.indexOf(error1) === -1){
+				errors.push(error1)				
+			}
+		} else {
+			errors = this.state.errors.filter((error) => {
+				return error1 != error;
+			})
+		}
+		if (errors.length === 0){
+			this.setState(() => ({pk_start, length, transitionOut : 'transitionOut'}),
+				() => setTimeout(() => this.setState(() => ({ errors })), 500)
+			 )
+		} else {
+
+			this.setState(() => ({ pk_start, length, errors, transitionOut: null }))
+		}
+
 	}
 
 	handlePkEndChange(e) {
 		const pk_end = e.target.value;
 		const length = this.state.pk_start && e.target.value ? (parseInt(e.target.value) - parseInt(this.state.pk_start)).toString() : '';
-		this.setState(() => ({ pk_end, length }));
+		let errors = this.state.errors;
+		let error1 = 'Starting pK must be smaller than ending pK';
+		if (pk_end <= this.state.pk_start){
+			if (errors.indexOf(error1) === -1){
+				errors.push(error1)				
+			}
+		} else {
+			errors = this.state.errors.filter((error) => {
+				return error1 != error;
+			})
+		}
+		if (errors.length === 0){
+			this.setState(() => ({pk_end, length, transitionOut : 'transitionOut'}),
+				() => setTimeout(() => this.setState(() => ({ errors })), 500)
+			 )
+		} else {
+			this.setState(() => ({ pk_end, length, errors, transitionOut: null  }))
+		}
 	}
 
 	handleQuantityChange(e) {
@@ -121,6 +160,9 @@ export class TaskAdd extends React.Component {
 	}
 
 	onSubmit(e) {
+		if (this.state.errors.length > 0){
+			return
+		}
 		e.preventDefault();
 		this.props.call('tasks.insert',
 			this.props.projectId,
@@ -160,8 +202,8 @@ export class TaskAdd extends React.Component {
 					predecessors: [],
 					dependencies: []
 				}, () => {
-					Session.set('isAddTaskOpen', false)}
-				)
+					this.props.triggerAddMode();
+				})
 			});
 	}
 
@@ -196,9 +238,9 @@ export class TaskAdd extends React.Component {
 		this.setState(() => ({ possiblePredecessors }))
 	}
 
-	addPredecessor(id, type) {
+	addPredecessor(id, type, delay) {
 		let predecessors = this.state.predecessors;
-		predecessors.push({id, type, delay : 0});
+		predecessors.push({id, type, delay});
 		this.setState(() => ({ predecessors }));
 		this.updateDependenciesWhenAddingPred(id);
 	}
@@ -260,8 +302,10 @@ export class TaskAdd extends React.Component {
 	// FUNCTION TO REMOVE PREDS AND REUPDATE DEPENDENCIES
 
 	render() {
+		console.log(this.state.errors);
 		return(
 			<div className="task__add">
+				{this.state.errors.length > 0 ? <Error errors={this.state.errors} transitionOut={this.state.transitionOut} /> : undefined}
 				<h1 className='task__add-main-title'>ADD A TASK</h1>
 				<div className="task__add-item"><div className='add--task-title'>Title:</div> <input className='task__add-input' onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Type:</div> <input className='task__add-input' onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
@@ -300,9 +344,10 @@ export class TaskAdd extends React.Component {
 					<h3 className="task__poss-preds__title">Predecessors</h3>
 					<div className="task__add-preds"> { this.renderPreds() }</div>
 				</div>
-
-				<button className='admin__button' onClick={this.onSubmit}>Add a Task</button>
-				<button className='admin__button' onClick={() => Session.set('isAddTaskOpen', false)}>Close</button>
+				<div className="add__buttons">
+					<button className='admin__button' onClick={this.onSubmit}>Add a Task</button>
+					<button className='admin__button admin__button-close' onClick={this.props.triggerAddMode}>Close</button>
+				</div>
 			</div>
 			)
 	}

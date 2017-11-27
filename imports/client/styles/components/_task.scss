@@ -3,6 +3,10 @@
 	@include align-items(center);
 }
 
+.bold {
+	font-weight: 700;
+}
+
 .task__title {
 	border-bottom: 1px solid lighten($font-color, 15%);
 	border-top: 1px solid lighten($font-color, 15%);
@@ -74,7 +78,9 @@
 	background: darken($cta1-color, 20%);
 }
 
-
+.data__edit, .data__delete{
+	cursor: pointer;
+}
 
 .data__title, {
 	width: 10%;

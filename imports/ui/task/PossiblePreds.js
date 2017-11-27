@@ -5,6 +5,15 @@ import moment from 'moment';
 export default class PossiblePreds extends React.Component{
 	constructor(props) {
 		super(props)
+		this.state = {
+			delay: 0
+		}
+		this.updateDelay = this.updateDelay.bind(this);
+	}
+
+	updateDelay(e){
+		let delay = parseInt(e.target.value);
+		this.setState(() => ({ delay }));
 	}
 
 
@@ -19,8 +28,9 @@ export default class PossiblePreds extends React.Component{
 					<div className="poss-pred__data poss-pred__data__dep_date_end">{moment(this.props.task.dep_date_end).format('DD/MM/YYYY')}</div>	
 					<div className="poss-pred__data poss-pred__data__inverted">{this.props.task.inverted.toString()}</div>
 					<div className="poss-pred__data poss-pred__data__color" style={{backgroundColor: this.props.task.color}}></div>
-					<div className="poss-pred__button" onClick={() => this.props.addPredecessor(this.props.task._id, 'asap')}>Asap</div>
-					<div className="poss-pred__button" onClick={() => this.props.addPredecessor(this.props.task._id, 'after')}>After</div>
+					<div className="poss-pred__button" onClick={() => this.props.addPredecessor(this.props.task._id, 'asap', this.state.delay * 24 * 60 * 60 * 1000)}>Asap</div>
+					<div className="poss-pred__button" onClick={() => this.props.addPredecessor(this.props.task._id, 'after', this.state.delay * 24 * 60 * 60 * 1000)}>After</div>
+					<input type="text" className="poss-pred__data poss-pred__data__delay" value={this.state.delay} onChange={this.updateDelay}></input>
 				</div>
 			)
 	}

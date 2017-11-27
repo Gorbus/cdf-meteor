@@ -142,7 +142,7 @@ export class TaskEdit extends React.Component {
 					this.props.updateAllDependencies(this.props.task._id)
 				}
 			);
-		this.props.changeEditMode();
+		this.props.closeEditMode();
 	}
 
 	updateDependenciesWhenRemovingPred(){
@@ -182,9 +182,9 @@ export class TaskEdit extends React.Component {
 		})
 	}
 
-	addPredecessor(id, type) {
+	addPredecessor(id, type, delay) {
 		let predecessors = this.state.predecessors;
-		predecessors.push({id, type, delay : 0});
+		predecessors.push({id, type, delay});
 		this.setState(() => ({ predecessors }));
 		this.updateDependenciesWhenAddingPred(id);
 	}
@@ -285,7 +285,11 @@ export class TaskEdit extends React.Component {
 					<div className="task__add-preds"> { this.renderPreds() }</div>
 				</div>
 
-				<button className='admin__button' onClick={this.onSubmit}>Edit Task</button>
+				<div className="add__buttons">
+					<button className='admin__button' onClick={this.onSubmit}>Edit Task</button>
+					<button className='admin__button admin__button-close' onClick={this.props.closeEditMode}>Close / Cancel</button>
+				</div>
+
 			</div>
 			)
 	}

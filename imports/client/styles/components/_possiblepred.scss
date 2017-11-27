@@ -23,7 +23,7 @@
 }
 
 .poss-pred__data__title {
-	width: 18%;
+	width: 16%;
 }
 
 .poss-pred__data__type {
@@ -35,7 +35,7 @@
 }
 
 .poss-pred__data__pk_start, .poss-pred__data__pk_end, .poss-pred__button,  {
-	width: 6%;
+	width: 5%;
 }
 
 .poss-pred__data__color, .poss-pred__data__inverted, .poss-pred__data__pred-type {
@@ -43,5 +43,13 @@
 }
 
 .poss-pred__button {
-	width: 8%;
+	width: 6%;
 }
+
+input.poss-pred__data__delay {
+	width: 5%;
+	padding: 0.05rem;
+	font-size: $small-font-size;
+	text-align: center;
+}
+

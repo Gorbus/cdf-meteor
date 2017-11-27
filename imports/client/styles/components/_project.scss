@@ -9,3 +9,7 @@
 .project__main-view {
 	@include flexbox;
 }
+
+.project__tasks-list {
+	margin-top: $space;
+}

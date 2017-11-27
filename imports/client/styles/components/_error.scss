@@ -1,0 +1,27 @@
+.error {
+	position: absolute;
+	top: -14rem;
+	right: 0rem;
+	width: 60rem;
+	height: 4rem;
+	padding: $space;
+	border-radius: 5px;
+	background: red;
+	color: black;
+	opacity: 0;
+	li {
+		margin-left: 2 * $space;
+	}
+}
+
+.transition {
+	top: -7rem;
+	opacity: 1;
+	transition: all .5s ease-in-out;
+}
+
+.transitionOut {
+	top: -14rem;
+	opacity: 0;
+	transition: all .5s ease-in-out;
+}

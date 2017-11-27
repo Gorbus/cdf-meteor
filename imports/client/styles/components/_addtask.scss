@@ -54,3 +54,26 @@
 	border-top: 1px solid $font-color;
 	margin-top: .7rem;
 }
+
+.add__buttons {
+	@include flexbox;
+	@include justify-content(center);
+}
+.admin__button {
+	margin-top: $space;
+	width: 12rem;
+	background: $cta3-color;
+	border: 0;
+	padding: $space / 2 $space;
+	border-radius: 5px;
+	cursor: pointer;
+	font-weight: 700;
+	&:hover {
+		background: $cta2-color;
+	}
+}
+
+.admin__button-close {
+	background: $cta1-color;
+	margin-left: $space;
+}
