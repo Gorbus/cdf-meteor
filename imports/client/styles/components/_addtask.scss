@@ -77,3 +77,20 @@
 	background: $cta1-color;
 	margin-left: $space;
 }
+
+.choose-rate-type {
+	margin-top: $space;
+	@include flexbox;
+	@include justify-content(space-around);
+}
+
+.task__add-button-rate {
+	padding: $space / 2 $space * 2;
+	background: $cta3-color;
+	border-radius: 3px;
+	cursor: pointer;
+	font-weight: 700;
+	&:hover {
+		background: $cta2-color;
+	}
+}

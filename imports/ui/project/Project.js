@@ -299,7 +299,7 @@ export class Project extends React.Component {
 					<ProjectHeader project={this.props.project} triggerAddMode={this.triggerAddMode} />
 					<div className="project-content">
 						<PlanCdf tasks={this.props.tasks} project={this.props.project} removeRefFromTaskRef={this.removeRefFromTaskRef} highlight={this.highlight} lowlight={this.lowlight} highlightIds={this.state.highlightIds} />
-						{this.state.addTaskOpen ? <TaskAdd projectId={this.props.project._id} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} triggerAddMode={this.triggerAddMode} /> : undefined}
+						{this.state.addTaskOpen ? <TaskAdd projectId={this.props.project._id} project={this.props.project} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} triggerAddMode={this.triggerAddMode} /> : undefined}
 						<div className='project__tasks-list'>
 							<div className="task__title">
 								<div className="task__data task__data__title data__title">Title</div>

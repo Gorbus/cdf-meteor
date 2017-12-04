@@ -12,7 +12,7 @@ export default class PossiblePreds extends React.Component{
 	}
 
 	updateDelay(e){
-		let delay = parseInt(e.target.value);
+		let delay = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
 		this.setState(() => ({ delay }));
 	}
 

@@ -11,7 +11,7 @@ import PredItem from './PredItem';
 
 import 'react-dates/lib/css/_datepicker.css';
 
-import { DateRangePicker } from 'react-dates';
+import {SingleDatePicker } from 'react-dates';
 
 export class TaskEdit extends React.Component {
 	constructor(props){
@@ -33,13 +33,19 @@ export class TaskEdit extends React.Component {
 			calendarFocused: null,
 			possiblePredecessors: [],
 			predecessors: props.task ? (props.task.predecessors ? props.task.predecessors : []) : [],
-			dependencies: props.task ? (props.task.dependencies ? props.task.dependencies : []) : []
+			dependencies: props.task ? (props.task.dependencies ? props.task.dependencies : []) : [],
+			errors: [],
+			transitionOut: null,
+			generalError : undefined,
+			rateDisabled: "disabled",
+			rateType: "duration"
 		}
 		this.handleTitleChange = this.handleTitleChange.bind(this);
 		this.handleTypeChange = this.handleTypeChange.bind(this);
 		this.handlePkStartChange = this.handlePkStartChange.bind(this);
 		this.handlePkEndChange = this.handlePkEndChange.bind(this);
-		this.onDatesChange = this.onDatesChange.bind(this);
+		this.onDateStartChange = this.onDateStartChange.bind(this);
+		this.onDateEndChange = this.onDateEndChange.bind(this);
 		this.handleQuantityChange = this.handleQuantityChange.bind(this);
 		this.handleQuantityUnitChange = this.handleQuantityUnitChange.bind(this);
 		this.handleRateChange = this.handleRateChange.bind(this);
@@ -54,6 +60,10 @@ export class TaskEdit extends React.Component {
 		this.updateDependenciesWhenAddingPred = this.updateDependenciesWhenAddingPred.bind(this);
 		this.updateDependenciesWhenRemovingPred = this.updateDependenciesWhenRemovingPred.bind(this);
 		this.handleChangeColor = this.handleChangeColor.bind(this);
+		this.defineRateAndQuantity = this.defineRateAndQuantity.bind(this);
+		this.defineDurationAndQuantity = this.defineDurationAndQuantity.bind(this);
+		this.onDurationChange = this.onDurationChange.bind(this);
+		this.closeAndClear = this.closeAndClear.bind(this);
 	}
 
 	componentDidMount() {
@@ -71,20 +81,93 @@ export class TaskEdit extends React.Component {
 	}
 
 	handlePkStartChange(e) {
-		const pk_start = e.target.value;
+		const pk_start = parseFloat(e.target.value.replace(/[^0-9.]/g, ''));
 		const length = e.target.value && this.state.pk_end ? (parseInt(this.state.pk_end) - parseInt(e.target.value)).toString() : '';
-		this.setState(() => ({ pk_start, length }));
+		let errors = this.state.errors;
+		let error1 = 'Starting pK must be smaller than ending pK';
+		let error2 = `Starting and ending pK must be with project boundary (${this.props.project.pk_start} - ${this.props.project.pk_end})`;
+		
+		if (pk_start => this.state.pk_end){
+			if (errors.indexOf(error1) === -1){
+				errors.push(error1)				
+			}
+		} else {
+			errors = this.state.errors.filter((error) => {
+				return error1 != error;
+			})
+		}
+		if (pk_start < this.props.project.pk_start || pk_start > this.props.project.pk_end){
+			if (errors.indexOf(error2) === -1){
+				errors.push(error2)
+			}
+		} else {
+			errors = this.state.errors.filter((error) => {
+				return error2 != error;
+			})
+		}
+
+		if (errors.length === 0){
+			this.setState(() => ({pk_start, length, transitionOut : 'transitionOut'}),
+				() => setTimeout(() => this.setState(() => ({ errors })), 500)
+			 )
+		} else {
+			this.setState(() => ({ pk_start, length, errors, transitionOut: null }))
+		}
+
 	}
 
 	handlePkEndChange(e) {
-		const pk_end = e.target.value;
+		const pk_end = parseFloat(e.target.value.replace(/[^0-9.]/g, ''));
 		const length = this.state.pk_start && e.target.value ? (parseInt(e.target.value) - parseInt(this.state.pk_start)).toString() : '';
-		this.setState(() => ({ pk_end, length }));
+		let errors = this.state.errors;
+		let error1 = 'Starting pK must be smaller than ending pK';
+		let error2 = `Starting and ending pK must be with project boundary (${this.props.project.pk_start} - ${this.props.project.pk_end})`;
+		if (pk_end <= this.state.pk_start){
+			if (errors.indexOf(error1) === -1){
+				errors.push(error1)				
+			}
+		} else {
+			errors = this.state.errors.filter((error) => {
+				return error1 != error;
+			})
+		}
+		if (pk_end < this.props.project.pk_start || pk_end > this.props.project.pk_end){
+			if (errors.indexOf(error2) === -1){
+				errors.push(error2)
+			}
+		} else {
+			errors = this.state.errors.filter((error) => {
+				return error2 != error;
+			})
+		}
+		if (errors.length === 0){
+			this.setState(() => ({pk_end, length, transitionOut : 'transitionOut'}),
+				() => setTimeout(() => this.setState(() => ({ errors })), 500)
+			 )
+		} else {
+			this.setState(() => ({ pk_end, length, errors, transitionOut: null  }))
+		}
 	}
 
 	handleQuantityChange(e) {
-		const quantity = e.target.value;
-		this.setState(() => ({	quantity	}));
+		const quantity = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
+		let duration = this.state.duration;
+		let dateEnd = this.state.date_end;
+		let rate = this.state.rate;
+		if(this.state.rateType === "rate"){
+			if (quantity && this.state.rate){
+				duration = (quantity / this.state.rate)* 24 * 60 * 60 * 1000;
+				if(this.state.date_start){
+					dateEnd = moment(this.state.date_start + duration);
+				}
+
+			}
+		} else {
+			if (quantity && duration){
+				rate = quantity / (duration / 1000 / 24 / 60 / 60)
+			}
+		}
+		this.setState(() => ({	quantity, date_end: dateEnd, duration, rate	}));
 	}
 
 	handleQuantityUnitChange(e) {
@@ -93,8 +176,16 @@ export class TaskEdit extends React.Component {
 	}
 
 	handleRateChange(e) {
-		const rate = e.target.value;
-		this.setState(() => ({	rate	}));
+		const rate = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0
+		let duration = this.state.duration;
+		let dateEnd = this.state.date_end;
+		if(rate && this.state.quantity){
+			duration = (this.state.quantity / rate) * 1000 * 60 * 60 * 24;
+			if(this.state.date_start){
+				dateEnd = moment(this.state.date_start + duration);
+			}
+		}
+		this.setState(() => ({	rate, duration, date_end : dateEnd	}));
 	}
 
 	handleInvertedChange(e) {
@@ -102,13 +193,55 @@ export class TaskEdit extends React.Component {
 		this.setState(() => ({	inverted	}));
 	}
 
-	onDatesChange({ startDate, endDate }) {
-		const duration = startDate && endDate ? endDate.diff(startDate, 'ms') : ''
+	onDateStartChange(startDate) {
+		let duration = this.state.duration;
+		if (startDate && this.state.date_end){
+			duration = (this.state.date_end.valueOf() - startDate.valueOf());
+		}
+		let rate = this.state.rate;
+		if (duration && this.state.quantity){
+			rate = this.state.quantity / (duration / 1000 / 60 / 60 / 24)
+		}
 		this.setState(() => ({
 			date_start: startDate,
+			duration,
+			rate
+			})
+		)
+	}
+
+	onDateEndChange(endDate) {
+		let duration = this.state.duration;
+		if (endDate && this.state.date_start){
+			duration = (endDate.valueOf() - this.state.date_start.valueOf());
+		}
+		let rate = this.state.rate;
+		if (duration && this.state.quantity){
+			rate = this.state.quantity / (duration / 1000 / 60 / 60 / 24)
+		}
+		this.setState(() => ({
 			date_end: endDate,
-			duration
-		})
+			duration,
+			rate
+			})
+		)
+	}
+
+	onDurationChange(e) {
+		let endDate = this.state.date_end;
+		let duration = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) * 1000 * 60 * 60 * 24 || 0;
+		if (duration && this.state.date_start){
+			endDate = moment(this.state.date_start.valueOf() + duration);
+		}
+		let rate = this.state.rate;
+		if (duration && this.state.quantity){
+			rate = this.state.quantity / (duration / 1000 / 60 / 60 / 24)
+		}
+		this.setState(() => ({
+			date_end: endDate,
+			duration,
+			rate
+			})
 		)
 	}
 
@@ -166,7 +299,7 @@ export class TaskEdit extends React.Component {
 	}
 
 	updateDependenciesWhenAddingPred(taskId){
-		let dependencies = this.state.dependencies;
+		let dependencies = JSON.parse(JSON.stringify(this.state.dependencies));
 		let task = this.props.tasks.one((task) => task._id === taskId)
 		if(!dependencies.one((onetaskId) => onetaskId === taskId)){
 			dependencies.push(taskId);
@@ -183,7 +316,7 @@ export class TaskEdit extends React.Component {
 	}
 
 	addPredecessor(id, type, delay) {
-		let predecessors = this.state.predecessors;
+		let predecessors = JSON.parse(JSON.stringify(this.state.predecessors));
 		predecessors.push({id, type, delay});
 		this.setState(() => ({ predecessors }));
 		this.updateDependenciesWhenAddingPred(id);
@@ -238,15 +371,36 @@ export class TaskEdit extends React.Component {
 		}
 	}
 
+	defineRateAndQuantity(){
+		this.setState(() => ({ rateDisabled : "", dateEndDisabled: true, durationDisabled: "disabled", rateType: "rate" }));
+ 	}
+
+	defineDurationAndQuantity(){
+		this.setState(() => ({ rateDisabled : "disabled", dateEndDisabled: false, durationDisabled: "", rateType: "duration" }));
+	}
+
 	handleChangeColor(color) {
 		console.log(color.hex);
 	  this.setState(() => ({ color: color.hex }));
 	};
 
+	closeAndClear() {
+		console.log(this.props.task.predecessors);
+		this.setState(() => ({
+			predecessors: this.props.task.predecessors,
+			dependencies: this.props.task.dependencies
+		}), () => {
+			this.updateDependenciesWhenRemovingPred();
+			this.props.closeEditMode();
+		});
+	}
+
 	render() {
+		console.log(this.props.task.predecessors);
+		console.log(this.state);
 		return(
 			<div className="task__add">
-				<h1 className='task__add-main-title'>ADD A TASK</h1>
+				<h1 className='task__add-main-title'>EDIT TASK</h1>
 				<div className="task__add-item"><div className='add--task-title'>Title:</div> <input className='task__add-input' onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Type:</div> <input className='task__add-input' onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Starting pK:</div> <input className='task__add-input' onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
@@ -254,15 +408,32 @@ export class TaskEdit extends React.Component {
 				<div className="task__add-item"><div className='add--task-title'>Length:</div> <input className='task__add-input' disabled value={this.state.length} placeholder="Length" type="text"/></div>
 				<div className="divDateRangePicker">
 					<span>Starting Date</span>
-					<DateRangePicker
-					  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
-					  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
-					  onDatesChange={this.onDatesChange} // PropTypes.func.isRequired,
-					  focusedInput={this.state.calendarFocused} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
-					  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
+					<SingleDatePicker
+					  date={this.state.date_start} // momentPropTypes.momentObj or null,
+					  onDateChange={this.onDateStartChange} // PropTypes.func.isRequired,
+					  focused={this.state.focusedDateStart} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
+					  onFocusChange={({ focused }) => {
+					  	this.setState(() => ({ focusedDateStart: focused }))
+						}
+					  } // PropTypes.func.isRequired,
 					  isOutsideRange={() => false}
 					/>
+					<SingleDatePicker
+					  date={this.state.date_end} // momentPropTypes.momentObj or null,
+					  onDateChange={this.onDateEndChange} // PropTypes.func.isRequired,
+					  focused={this.state.focusedDateEnd} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
+					  onFocusChange={({ focused }) => {
+					  	this.setState(() => ({ focusedDateEnd: focused }))
+							}
+					  } // PropTypes.func.isRequired,
+					  isOutsideRange={() => false}
+					  disabled={this.state.dateEndDisabled}
+					/>
 					<span>Finishing Date</span>
+				</div>
+				<div className="choose-rate-type">
+					<div className="task__add-button-rate" onClick={this.defineRateAndQuantity}>Fix Rate & Quantity</div>
+					<div className="task__add-button-rate" onClick={this.defineDurationAndQuantity}>Fix Duration & Quantity</div>
 				</div>
 				<div className="task__add-item"><div className='add--task-title'>Duration:</div> <input className='task__add-input' disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Quantity:</div> <input className='task__add-input' onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
@@ -287,7 +458,7 @@ export class TaskEdit extends React.Component {
 
 				<div className="add__buttons">
 					<button className='admin__button' onClick={this.onSubmit}>Edit Task</button>
-					<button className='admin__button admin__button-close' onClick={this.props.closeEditMode}>Close / Cancel</button>
+					<button className='admin__button admin__button-close' onClick={this.closeAndClear}>Close / Cancel</button>
 				</div>
 
 			</div>
