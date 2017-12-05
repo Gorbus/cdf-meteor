@@ -103,6 +103,7 @@ export default class PlanCdf extends React.Component {
 	}
 
 	onmouseout() {
+		console.log('out');
 		this.setState(() => ({taskDetail : null}));
 		this.props.lowlight();
 	}
@@ -126,9 +127,43 @@ export default class PlanCdf extends React.Component {
 			if (this.props.highlightIds.indexOf(task._id) > -1){
 				attr["stroke-width"] = 5;
 			};
-			return <Path mouseover={function() { return self.onmouseover(task) }} mouseout={function() { return self.onmouseout(this) }} key={task._id} d={coords} attr={attr} />
+			return <Path mouseover={function() { return self.onmouseover(task) }} mouseout={function() { return self.onmouseout() }} key={task._id} d={coords} attr={attr} />
 		})
 		return tasksToDraw;
+	}
+
+	drawLegend() {
+		let legendsToDraw = this.props.tasks.map((task) => {
+			let legend = task.title + "/" + task.quantity + task.quantity_unit;
+			let start = (task.dep_date_start - this.props.project.date_start) / 1000 / 60 / 60 / 24;
+			let end = (task.dep_date_end - this.props.project.date_start) / 1000 / 60 / 60 / 24;
+			let oppose = task.duration * this.state.paperScaleHeight / 1000 / 60 / 60 / 24;
+			let adjacent = task.length * this.state.paperScaleWidth;
+			let invert = 1;
+			if (!task.inverted) {
+				invert = -1;
+			}
+			let angle = invert * Math.atan(oppose / adjacent) * 180 / Math.PI
+			let bufX = 0
+			let bufY = 0
+			if (!task.inverted){
+				if (angle < -45){
+					bufX = -9
+				} else {
+					bufY = -9
+				}
+			}	else {
+				if (angle < 45){
+					bufY = 9
+				}	else {
+					bufX = 9
+				}
+			}
+			let xCoord = parseInt(this.state.paperMarginX + ((task.pk_start - this.props.project.pk_start) + (task.pk_end - this.props.project.pk_start)) / 2 * this.state.paperScaleWidth + bufX)
+			let yCoord = parseInt(this.state.paperHeight - this.state.paperMarginY - ((start + end) / 2 * this.state.paperScaleHeight) + bufY)
+			return <Text x={xCoord} y={yCoord} rotate={{deg: angle, cx: xCoord, cy: yCoord}} text={legend} attr={{"stroke" : task.color}} key={`legend${task._id}`} />
+		})
+		return legendsToDraw;
 	}
 
 	render() {
@@ -139,6 +174,7 @@ export default class PlanCdf extends React.Component {
 					<Set>
 						{ this.drawTasks() }
 					</Set>
+						{ this.props.showLegend ? <Set>{this.drawLegend()}</Set> : undefined}
 				</Paper>
 				<div>
 					{ this.state.taskDetail ? <TaskDetail task={this.state.taskDetail} /> : undefined}

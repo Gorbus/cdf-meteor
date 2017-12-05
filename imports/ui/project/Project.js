@@ -22,7 +22,8 @@ export class Project extends React.Component {
 			tasksOrder : [],
 			highlightIds : [],
 			addTaskOpen : false,
-			editTaskOpen: null
+			editTaskOpen: null,
+			showLegend: true
 		}
 		this.renderTasks = this.renderTasks.bind(this);
 		this.updateAllDependencies = this.updateAllDependencies.bind(this);
@@ -36,6 +37,7 @@ export class Project extends React.Component {
 		this.lowlight = this.lowlight.bind(this);
 		this.triggerEditMode = this.triggerEditMode.bind(this);
 		this.triggerAddMode = this.triggerAddMode.bind(this);
+		this.switchLegend = this.switchLegend.bind(this);
 	}
 
 	triggerEditMode(task){
@@ -280,7 +282,10 @@ export class Project extends React.Component {
 		setTimeout(() => self.updateAfterChange(), 1);
 	}
 
-
+	switchLegend() {
+		let showLegend = !this.state.showLegend;
+		this.setState(() => ({ showLegend}));
+	}
 
 
 	renderTasks() {
@@ -292,13 +297,12 @@ export class Project extends React.Component {
 	}
 
 	render(){
-		console.log(this.props.tasks);
 		if(this.props.loaded){
 			return (
 				<div className='project'>
-					<ProjectHeader project={this.props.project} triggerAddMode={this.triggerAddMode} />
+					<ProjectHeader project={this.props.project} triggerAddMode={this.triggerAddMode} switchLegend={this.switchLegend}/>
 					<div className="project-content">
-						<PlanCdf tasks={this.props.tasks} project={this.props.project} removeRefFromTaskRef={this.removeRefFromTaskRef} highlight={this.highlight} lowlight={this.lowlight} highlightIds={this.state.highlightIds} />
+						<PlanCdf tasks={this.props.tasks} project={this.props.project} removeRefFromTaskRef={this.removeRefFromTaskRef} highlight={this.highlight} lowlight={this.lowlight} highlightIds={this.state.highlightIds} showLegend={this.state.showLegend} />
 						{this.state.addTaskOpen ? <TaskAdd projectId={this.props.project._id} project={this.props.project} tasks={this.props.tasks} updateAfterChange={this.updateAfterChange} triggerAddMode={this.triggerAddMode} /> : undefined}
 						<div className='project__tasks-list'>
 							<div className="task__title">
