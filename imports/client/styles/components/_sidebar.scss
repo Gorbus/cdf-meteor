@@ -3,4 +3,35 @@
 	font-weight: 700;
 	background: $dark-bg;
 	min-height: 100vh;
+	color: $light-bg;
+	a {
+		color: $light-bg;
+	}
+}
+
+.sidebar__email {
+	text-align: center;
+	font-weight: 900;
+	font-size: $large-font-size;
+	margin-bottom: $space;
+}
+
+.button-logout {
+	color: red;
+	text-align: center;
+	margin: $space 0 2 * $space 0;
+	font-style: italic;
+}
+
+.back-to-projects {
+	text-align: center;
+}
+
+.sidebar__title {
+	text-align: center;
+	margin-bottom: $space;
+}
+
+.sidebar__connected-as {
+	text-align: center;
 }

@@ -1,8 +1,10 @@
+import { Meteor } from 'meteor/meteor';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import { withTracker } from 'meteor/react-meteor-data';
 import { Accounts } from 'meteor/accounts-base';
 
-export default class Signup extends React.Component {
+export class Signup extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -37,22 +39,31 @@ export default class Signup extends React.Component {
 	}
 
 	render() {
-		return (
-			<div className='signup'>
-				<div className='container'>
+		if (this.props.logging){
+			return (
+				<Redirect to="/projects" />
+				)
+		} else {
+			return (
+				<div className='signup'>
 					<div className='signup__main'>
-						<h1 className='signup__title'>Créer son compte</h1>
+						<h1 className='signup__title'>Create an account</h1>
 						{this.state.error ? <p>{this.state.error}</p> : undefined}
 						<form onSubmit={this.onSubmit.bind(this)} className='signup__form' noValidate>
 							<input type="email" ref="email" name="email" placeholder="Your email" />
 							<input type="password" ref="password" name="password" placeholder="Password" />
-							<button className="signup__button">Créer son compte</button>
+							<button className="signup__button">Create</button>
 						</form>
-						<Link to="/login">Vous avez déjà un compte ?</Link>
+						<Link to="/login">Already have an account ?</Link>
 					</div>
-				</div>
-			</div>	
-
-		);
+				</div>	
+			);
+		}
 	}
 }
+
+export default withTracker(() => {
+	return {
+    logging: Meteor.loggingIn()
+	}
+})(Signup)

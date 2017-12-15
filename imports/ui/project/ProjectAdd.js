@@ -97,21 +97,22 @@ export class ProjectAdd extends React.Component {
 	render() {
 		return(
 			<div className="project__add">
-				Title: <input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/>
-				Type: <input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/>
-				Country: <input onChange={this.handleCountryChange} value={this.state.country} placeholder="Country" type="text"/>
-				Starting pK: <input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/>
-				Ending pK: <input onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/>
-				Length: <input disabled value={this.state.length} placeholder="Length" type="text"/>
-				<DateRangePicker
+				<h1 className='project__add-title'>Create a new project</h1>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Title:</div><input onChange={this.handleTitleChange} value={this.state.title} placeholder="Title" type="text"/></div>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Type:</div><input onChange={this.handleTypeChange} value={this.state.type} placeholder="Type" type="text"/></div>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Country:</div><input onChange={this.handleCountryChange} value={this.state.country} placeholder="Country" type="text"/></div>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Starting pK:</div><input onChange={this.handlePkStartChange} value={this.state.pk_start} placeholder="Starting pK" type="text"/></div>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Ending pK:</div><input onChange={this.handlePkEndChange} value={this.state.pk_end} placeholder="Ending pK" type="text"/></div>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Length:</div><input disabled value={this.state.length} placeholder="Length" type="text"/></div>
+				<div className="project__add-one-entry project__add-date"><DateRangePicker
 				  startDate={this.state.date_start} // momentPropTypes.momentObj or null,
 				  endDate={this.state.date_end} // momentPropTypes.momentObj or null,
 				  onDatesChange={this.onDatesChange} // PropTypes.func.isRequired,
 				  focusedInput={this.state.calendarFocused} // PropTypes.oneOf([START_DATE, END_DATE]) or null,
 				  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
 				  isOutsideRange={() => false}
-				/>
-				Duration: <input disabled value={this.state.duration} placeholder="Duration" type="text"/>
+				/></div>
+				<div className="project__add-one-entry"><div className='project__add-entry-title'>Duration:</div><input disabled value={this.state.duration / 1000 / 24 / 60 / 60} placeholder="Duration" type="text"/></div>
 				<button className='admin__button' onClick={this.onSubmit}>Create Project</button>
 			</div>
 			)

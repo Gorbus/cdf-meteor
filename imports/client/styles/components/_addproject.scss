@@ -1,0 +1,27 @@
+.project__add {
+	@include flexbox;
+	@include flex-direction(column);
+	margin: 2 * $space auto;
+	width: 30%;
+	min-width: 42rem;
+	background: $light-bg;
+	padding: $space;
+	border: 1px solid $border-color;
+	.admin__button {
+		@include align-self(center);
+	}
+}
+
+.project__add-title {
+	text-align: center;
+}
+
+.project__add-one-entry {
+	@include flexbox;
+	@include flex-direction(column);
+	margin-top: $space;
+}
+
+.project__add-date {
+	text-align: center;
+}

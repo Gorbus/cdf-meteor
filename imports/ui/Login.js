@@ -1,8 +1,9 @@
 import { Meteor } from 'meteor/meteor';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import { withTracker } from 'meteor/react-meteor-data';
 
-export default class Login extends React.Component {
+export class Login extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -32,9 +33,13 @@ export default class Login extends React.Component {
 
 
 	render() {
-		return (
-			<div className="login">
-				<div className="container">
+		if (this.props.logging){
+			return (
+				<Redirect to="/projects" />
+				)
+		} else {
+			return (
+				<div className="login">
 					<div className="login__main">
 						<h1 className="login__title">Login</h1>
 						{this.state.error ? <p>{this.state.error}</p> : undefined}
@@ -46,7 +51,14 @@ export default class Login extends React.Component {
 						<Link to="/signup">Need an account ?</Link>
 					</div>
 				</div>
-			</div>
-		);
+			);
+		}
 	}
 }
+
+
+export default withTracker(() => {
+	return {
+    logging: Meteor.loggingIn()
+	}
+})(Login)

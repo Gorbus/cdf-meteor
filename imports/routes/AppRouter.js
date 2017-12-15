@@ -4,7 +4,7 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
 import Footer from './../ui/Footer';
 import SideBar from './../ui/SideBar';
-import Index from './../ui/Index';
+import Projects from './../ui/Projects';
 import Login from './../ui/Login';
 import Project from './../ui/project/Project';
 import Signup from './../ui/Signup';
@@ -15,7 +15,7 @@ const AppRouter = () => (
 		<div className="wholesite">
 			<SideBar />
 			<Switch>
-				<Route path="/" component={Index} exact={true} />
+				<Route path="/projects" component={Projects} exact={true} />
 				<Route path="/project/:id" component={Project} />
 				<Route path="/login" component={Login} />
 				<Route path="/signup" component={Signup} />

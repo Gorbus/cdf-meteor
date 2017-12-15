@@ -1,0 +1,43 @@
+.login, .signup {
+	width: 100%;
+	@include flexbox;
+	@include justify-content(center);
+}
+
+.login__main, .signup__main {
+	@include flexbox;
+	@include flex-direction(column);
+	@include justify-content(space-between);
+	@include align-items(center);
+	margin-top: 3 * $space;
+	height: 24rem;
+	width: 24rem;
+	background: $light-bg;
+	border: 1px solid $border-color;
+}
+
+.login__title, .signup__title {
+	text-align: center;
+}
+
+.login__form, .signup__form {
+	@include flexbox;
+	@include flex-direction(column);
+	input, button {
+		margin-top: $space;
+	}
+	button {
+		background: $cta3-color;
+		font-weight: 700;
+		font-size: $medium-font-size;
+		padding: 0 $space * 2 0 $space * 2 ;
+		color: white;
+		height: 5rem;
+		line-height: 5rem;
+		border-radius: 5px;
+		margin-left: $space;
+		margin-right: $space;
+		cursor: pointer;
+	}
+}
+

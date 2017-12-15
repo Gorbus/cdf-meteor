@@ -19,8 +19,8 @@ export class ProjectEdit extends React.Component {
 			pk_start: props.project ? props.project.pk_start : '',
 			pk_end: props.project ? props.project.pk_end : '',
 			length: props.project ? props.project.length : '',
-			date_start: props.project ? moment.unix(props.project.date_start) : moment(),
-			date_end: props.project ? moment.unix(props.project.date_end) : moment(),
+			date_start: props.project ? moment(props.project.date_start) : moment(),
+			date_end: props.project ? moment(props.project.date_end) : moment(),
 			duration: props.project ? props.project.duration : '',
 			calendarFocused: null
 		}
@@ -90,18 +90,9 @@ export class ProjectEdit extends React.Component {
 			date_start: this.state.date_start.unix(),
 			date_end: this.state.date_end.unix(),
 			duration: parseInt(this.state.duration)
+		}, () => {
+			this.props.closeEditMode();
 		})
-		// this.setState({
-		// 	title: '',
-		// 	type: '',
-		// 	country: '',
-		// 	length: '',
-		// 	pk_start: '',
-		// 	pk_end: '',
-		// 	date_start: '',
-		// 	date_end: '',
-		// 	duration: '',
-		// })
 	}
 
 	render() {
@@ -121,8 +112,10 @@ export class ProjectEdit extends React.Component {
 				  onFocusChange={this.onFocusChange} // PropTypes.func.isRequired,
 				  isOutsideRange={() => false}
 				/>
-				Duration: <input disabled value={this.state.duration} placeholder="Duration" type="text"/>
+				Duration: <input disabled value={this.state.duration / 1000 / 60 / 60 / 24} placeholder="Duration" type="text"/>
 				<button className='admin__button' onClick={this.onSubmit}>Edit Project</button>
+				<button className='admin__button' onClick={() => this.props.closeEditMode()}>Cancel</button>
+
 			</div>
 			)
 	}

@@ -1,14 +1,17 @@
 import React from 'react';
 import { Accounts } from 'meteor/accounts-base';
 import { withTracker } from 'meteor/react-meteor-data';
+import { Link } from 'react-router-dom'
 
 export const SideBar = (props) => {
+	console.log(props.user)
 	return (
 		<div className='sidebar'>
-			<h3>Header</h3>
-			{ }
-			<button className="button button--link-text" onClick={() => Accounts.logout() }>Logout</button>
-			{ props.loading ? undefined : props.user._id}
+			<div className="button-logout" onClick={() => Accounts.logout() }>Logout</div>
+			<h1 className="sidebar__title">Planning CDF</h1>
+			<div className="sidebar__connected-as">Connected as:</div>
+			{ props.loading || !props.user ? undefined : <div className="sidebar__email">{props.user.emails[0].address}</div>}
+			{props.user ? <div className="back-to-projects"><Link to="/projects">Back to your projects</Link></div> : undefined	}
 		</div>
 		)
 }

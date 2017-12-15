@@ -1,0 +1,58 @@
+.projects__list {
+	@include flexbox;
+	@include flex-direction(column);
+	margin: $space;
+}
+
+.project__item, .projects__list-titles {
+	@include flexbox;
+	@include justify-content(space-around);
+}
+
+.projects__list-titles {
+	background: $light-bg;
+	border: 1px solid $border-color;
+}
+
+.project__item {
+	background: darken($light-bg, 5%);
+}
+
+.project__item:nth-child(even) {
+	background: darken($light-bg, 10%);
+}
+
+.project__data, .projects__list-title, .project-date_start, .project-date_end  {
+	width: 8%;
+}
+
+.project-type, .project-title, .project-delete  {
+	width: 10%
+}
+
+.project-pk_start, .project-pk_end, .project-length, .project-duration {
+	width: 6%;
+}
+
+.projects__list-title {
+	font-weight: 700;
+}
+
+.project__item {
+	button {
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+		&:focus, &:target, &:active {
+			border: 0;
+		}
+	}
+	&:hover {
+		font-weight: 700;
+	}
+}
+
+.project-delete-mode {
+	@include flexbox;
+	@include justify-content(space-between);
+}
