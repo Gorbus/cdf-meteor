@@ -53,9 +53,12 @@ export default class PlanCdf extends React.Component {
 		}
 		let fullScaleX = [];
 		fullScaleX.push(<Text key="echX_start_text" x={this.state.paperMarginX} y={this.state.paperHeight - this.state.paperMarginY / 4} text={this.props.project.pk_start + 'm'} attr={{"stroke" : "#565656"}} />);
+		
+		console.log(nrOfEchelonX);
+		console.log(startEchelonX)
 		for (let j = startEchelonX; j < (startEchelonX + nrOfEchelonX); j++){
 			let echX = j * scaleEchelonX;
-			if((echX > this.props.project.pk_start * 1.02) && (echX < this.props.project.pk_end * (nrOfEchelonX - 0) / nrOfEchelonX)){
+			if((echX > this.props.project.pk_start * 1.002) && (echX < this.props.project.pk_end * (nrOfEchelonX - 0) / nrOfEchelonX)){
 				let echX_draw = 'M' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMarginY * 3 / 4) + 'L' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMarginY * 5 / 4);
 				fullScaleX.push(<Path key={`scaleX${j}draw`} d={echX_draw} attr={{"stroke" : "#565656"}} />);
 				let echX_line = 'M' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + (this.state.paperHeight - this.state.paperMarginY) + 'L' + (this.state.paperMarginX + (echX - this.props.project.pk_start) * this.state.paperScaleWidth) + ',' + '0';
@@ -70,11 +73,12 @@ export default class PlanCdf extends React.Component {
 		if(startEchelonY === 0){
 			startEchelonY++;
 		}
-		if (parseInt((startEchelonY * scaleEchelonY)) == parseInt(this.props.project.date_start)){
+		if (parseInt((startEchelonY * scaleEchelonY)) === parseInt(this.props.project.date_start)){
 			startEchelonY++;
 		}
 		let fullScaleY = [];
 		fullScaleY.push(<Text key="echY_start_text" x={2} y={(this.state.paperHeight - this.state.paperMarginY)} text={moment(this.props.project.date_start).format('DD/MM/YYYY')} attr={{"stroke" : "#565656", "text-anchor":"start"}}/>)
+		
 		for (let k = 1; k <= nrOfEchelonY; k++){
 			let echY = k * scaleEchelonY;
 			let yCoord = this.state.paperHeight - this.state.paperMarginY - echY * this.state.paperScaleHeight;

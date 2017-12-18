@@ -153,7 +153,7 @@ export class Project extends React.Component {
 									}
 								}
 							}
-							new_dep_date_end = new_dep_date_start + coefTask * task.length;
+							new_dep_date_end = new_dep_date_start + new_dep_duration;
 						}
 					}
 					if (new_dep_date_start > rolling_date_start){

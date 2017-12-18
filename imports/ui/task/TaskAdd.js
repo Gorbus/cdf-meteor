@@ -24,8 +24,8 @@ export class TaskAdd extends React.Component {
 			pk_start: '',
 			pk_end: '',
 			length: '',
-			date_start: moment(),
-			date_end: moment().add(1, "days"),
+			date_start: this.props.project ? moment(this.props.project.date_start) : moment(),
+			date_end: this.props.project ? moment(this.props.project.date_start).add(1, "days") : moment().add(1, "days"),
 			duration: 24 * 60 * 60 * 1000,
 			quantity: '',
 			quantity_unit: '',
@@ -43,7 +43,11 @@ export class TaskAdd extends React.Component {
 			transitionOut: null,
 			generalError : undefined,
 			rateDisabled: "disabled",
-			rateType: "duration"
+			rateType: "duration",
+			errorsList: [
+				'Starting pK must be smaller than ending pK',
+				`Starting and ending pK must be with project boundary (${this.props.project.pk_start} - ${this.props.project.pk_end})`,
+			]
 		}
 		this.handleTitleChange = this.handleTitleChange.bind(this);
 		this.handleTypeChange = this.handleTypeChange.bind(this);
@@ -84,35 +88,31 @@ export class TaskAdd extends React.Component {
 	}
 
 	handlePkStartChange(e) {
-		const pk_start = parseFloat(e.target.value.replace(/[^0-9.]/g, ''));
+		const pk_start = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
 		const length = e.target.value && this.state.pk_end ? (parseInt(this.state.pk_end) - parseInt(e.target.value)).toString() : '';
-		let errors = this.state.errors;
-		let error1 = 'Starting pK must be smaller than ending pK';
-		let error2 = `Starting and ending pK must be with project boundary (${this.props.project.pk_start} - ${this.props.project.pk_end})`;
+		let errors = JSON.parse(JSON.stringify(this.state.errors));
 		
 		if (pk_start => this.state.pk_end){
-			if (errors.indexOf(error1) === -1){
-				errors.push(error1)				
+			if (errors.indexOf(this.state.errorsList[0]) === -1){
+				errors.push(this.state.errorsList[0])				
 			}
 		} else {
-			errors = this.state.errors.filter((error) => {
-				return error1 != error;
+			errors = this.errors.filter((error) => {
+				return this.state.errorsList[0] != error;
 			})
 		}
-		if (pk_start < this.props.project.pk_start || pk_start > this.props.project.pk_end){
-			if (errors.indexOf(error2) === -1){
-				errors.push(error2)
+		if (pk_start < this.props.project.pk_start || pk_start > this.props.project.pk_end || this.state.pk_end < this.props.project.pk_start || this.state.pk_end > this.props.project.pk_end ){
+			if (errors.indexOf(this.state.errorsList[1]) === -1){
+				errors.push(this.state.errorsList[1])
 			}
 		} else {
-			errors = this.state.errors.filter((error) => {
-				return error2 != error;
+			errors = this.errors.filter((error) => {
+				return this.state.errorsList[1] != error;
 			})
 		}
 
 		if (errors.length === 0){
-			this.setState(() => ({pk_start, length, transitionOut : 'transitionOut'}),
-				() => setTimeout(() => this.setState(() => ({ errors })), 500)
-			 )
+			this.setState(() => ({pk_start, length, errors:[], transitionOut : 'transitionOut'}));
 		} else {
 			this.setState(() => ({ pk_start, length, errors, transitionOut: null }))
 		}
@@ -120,33 +120,29 @@ export class TaskAdd extends React.Component {
 	}
 
 	handlePkEndChange(e) {
-		const pk_end = parseFloat(e.target.value.replace(/[^0-9.]/g, ''));
+		const pk_end = parseFloat(e.target.value.replace(/[^0-9.]/g, '')) || 0;
 		const length = this.state.pk_start && e.target.value ? (parseInt(e.target.value) - parseInt(this.state.pk_start)).toString() : '';
-		let errors = this.state.errors;
-		let error1 = 'Starting pK must be smaller than ending pK';
-		let error2 = `Starting and ending pK must be with project boundary (${this.props.project.pk_start} - ${this.props.project.pk_end})`;
+		let errors = JSON.parse(JSON.stringify(this.state.errors));
 		if (pk_end <= this.state.pk_start){
-			if (errors.indexOf(error1) === -1){
-				errors.push(error1)				
+			if (errors.indexOf(this.state.errorsList[0]) === -1){
+				errors.push(this.state.errorsList[0])				
 			}
 		} else {
-			errors = this.state.errors.filter((error) => {
-				return error1 != error;
+			errors = errors.filter((error) => {
+				return this.state.errorsList[0] != error;
 			})
 		}
-		if (pk_end < this.props.project.pk_start || pk_end > this.props.project.pk_end){
-			if (errors.indexOf(error2) === -1){
-				errors.push(error2)
+		if (pk_end < this.props.project.pk_start || pk_end > this.props.project.pk_end || this.state.pk_start < this.props.project.pk_start || this.state.pk_start > this.props.project.pk_end){
+			if (errors.indexOf(this.state.errorsList[1]) === -1){
+				errors.push(this.state.errorsList[1])
 			}
 		} else {
-			errors = this.state.errors.filter((error) => {
-				return error2 != error;
+			errors = errors.filter((error) => {
+				return this.state.errorsList[1] != error;
 			})
 		}
 		if (errors.length === 0){
-			this.setState(() => ({pk_end, length, transitionOut : 'transitionOut'}),
-				() => setTimeout(() => this.setState(() => ({ errors })), 500)
-			 )
+			this.setState(() => ({pk_end, length, errors: [], transitionOut : 'transitionOut'}));
 		} else {
 			this.setState(() => ({ pk_end, length, errors, transitionOut: null  }))
 		}

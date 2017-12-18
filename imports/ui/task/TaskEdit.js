@@ -156,7 +156,7 @@ export class TaskEdit extends React.Component {
 		let rate = this.state.rate;
 		if(this.state.rateType === "rate"){
 			if (quantity && this.state.rate){
-				duration = (quantity / this.state.rate)* 24 * 60 * 60 * 1000;
+				duration = (quantity / this.state.rate) * 24 * 60 * 60 * 1000;
 				if(this.state.date_start){
 					dateEnd = moment(this.state.date_start + duration);
 				}
@@ -435,7 +435,7 @@ export class TaskEdit extends React.Component {
 					<div className="task__add-button-rate" onClick={this.defineRateAndQuantity}>Fix Rate & Quantity</div>
 					<div className="task__add-button-rate" onClick={this.defineDurationAndQuantity}>Fix Duration & Quantity</div>
 				</div>
-				<div className="task__add-item"><div className='add--task-title'>Duration:</div> <input className='task__add-input' disabled value={this.state.duration} placeholder="Duration" type="text"/></div>
+				<div className="task__add-item"><div className='add--task-title'>Duration:</div> <input className='task__add-input' disabled value={this.state.duration / 1000 / 24 / 60 / 60} placeholder="Duration" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Quantity:</div> <input className='task__add-input' onChange={this.handleQuantityChange} value={this.state.quantity} placeholder="Quantity" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Quantity Unit:</div> <input className='task__add-input' onChange={this.handleQuantityUnitChange} value={this.state.quantity_unit} placeholder="Quantity Unit" type="text"/></div>
 				<div className="task__add-item"><div className='add--task-title'>Rate:</div> <input className='task__add-input' onChange={this.handleRateChange} value={this.state.rate} placeholder="Rate" type="text"/></div>

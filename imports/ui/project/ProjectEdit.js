@@ -87,8 +87,8 @@ export class ProjectEdit extends React.Component {
 			pk_start: parseInt(this.state.pk_start),
 			pk_end: parseInt(this.state.pk_end),
 			length: parseInt(this.state.length),
-			date_start: this.state.date_start.unix(),
-			date_end: this.state.date_end.unix(),
+			date_start: this.state.date_start.valueOf(),
+			date_end: this.state.date_end.valueOf(),
 			duration: parseInt(this.state.duration)
 		}, () => {
 			this.props.closeEditMode();
